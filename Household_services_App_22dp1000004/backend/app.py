@@ -6,13 +6,25 @@ from routes.customer_routes import customer_bp
 from routes.professional_routes import professional_bp
 from config import Config
 from models import db, user, service, service_request
+from flask_login import LoginManager
+from routes.auth import auth_bp
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    # Initialize Flask-Login
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'  # Redirect unauthorized users to login
+
+    # Initialize JWT
+    jwt = JWTManager(app)
+
     CORS(app)
 
     # Register Blueprints
+    app.register_blueprint(auth_bp, url_prefix='/auth')  # Auth routes
     app.register_blueprint(admin_bp)
     app.register_blueprint(customer_bp)
     app.register_blueprint(professional_bp)
@@ -32,21 +44,3 @@ if __name__ =='__main__':
     app = create_app()
     #db.create_all()
     app.run(host='0.0.0.0', port=5858, debug=True)
-
-
-
-# app = Flask(__name__)
-# app.config.from_object(Config)
-# CORS(app)
-
-# # Register Blueprints
-# app.register_blueprint(admin_bp)
-# app.register_blueprint(customer_bp)
-# app.register_blueprint(professional_bp)
-
-# with app.app_context():
-#     db.init_app(app)
-#     db.create_all()  # Create tables
-    
-# if __name__ == '__main__':
-#     app.run(debug=True)

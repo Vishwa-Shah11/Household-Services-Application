@@ -1,6 +1,7 @@
 from . import db
 
 class ServiceRequest(db.Model):
+    __tablename__ = 'service_request'
     id = db.Column(db.Integer, primary_key=True)
     service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=False)
     customer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
