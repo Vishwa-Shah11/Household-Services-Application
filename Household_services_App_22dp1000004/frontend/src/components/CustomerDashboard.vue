@@ -1,0 +1,7 @@
+<template>
+    <div class="container mt-5">
+      <h2>Customer Dashboard</h2>
+      <p>Welcome to the Customer Dashboard</p>
+    </div>
+  </template>
+  
