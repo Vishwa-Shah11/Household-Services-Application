@@ -1,13 +1,12 @@
 <template>
-  <!-- <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/> -->
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
       <router-link class="navbar-brand" to="/">Home</router-link>
       <div class="navbar-nav">
-        <router-link class="nav-link" to="/admin">Admin</router-link>
-        <router-link class="nav-link" to="/professional">Professional</router-link>
-        <router-link class="nav-link" to="/customer">Customer</router-link>
+        <router-link class="nav-link" to="/admin" v-if="isAuthenticated">Admin</router-link>
+        <router-link class="nav-link" to="/professional" v-if="isAuthenticated">Professional</router-link>
+        <router-link class="nav-link" to="/customer" v-if="isAuthenticated">Customer</router-link>
+        <button class="btn btn-danger ms-2" @click="logout" v-if="isAuthenticated">Logout</button>
       </div>
     </div>
   </nav>
@@ -15,14 +14,19 @@
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+  computed: {
+    isAuthenticated() {
+      return localStorage.getItem('token') !== null;
+    },
+  },
+  methods: {
+    logout() {
+      localStorage.removeItem('token');
+      this.$router.push('/login');
+    },
+  },
+};
 </script>
 
 <style>

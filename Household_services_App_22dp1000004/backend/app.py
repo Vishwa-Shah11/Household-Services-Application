@@ -1,12 +1,11 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
-from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from routes.admin_routes import admin_bp
 from routes.customer_routes import customer_bp
 from routes.professional_routes import professional_bp
 from config import Config
-from models import db, user, service, service_request
+from models import db
 from flask_login import LoginManager
 from routes.auth import auth_bp
 
@@ -22,7 +21,7 @@ def create_app():
     # Initialize JWT
     jwt = JWTManager(app)
 
-    CORS(app)
+    CORS(app, resources={r"/*": {"origins": "*"}})
 
     # Register Blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')  # Auth routes
@@ -32,6 +31,7 @@ def create_app():
 
     with app.app_context():
         db.init_app(app)
+        #db.drop_all() #drop tables
         db.create_all()  # Create tables
 
     @app.route('/')

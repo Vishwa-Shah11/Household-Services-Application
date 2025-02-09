@@ -26,7 +26,7 @@
         password: ''
       };
     },
-    methods: {
+    methods: { 
       async loginUser() {
         try {
           const response = await axios.post('http://localhost:5858/auth/login', {
@@ -35,10 +35,16 @@
           });
   
           localStorage.setItem('token', response.data.token);
-          alert('Login successful');
-          this.$router.push('/dashboard');
+          alert('Login Successful!');
+
+          // Redirect based on role
+          if (response.data.role === 'admin') this.$router.push('/admin');
+          else if (response.data.role === 'professional') this.$router.push('/professional');
+          else this.$router.push('/customer');
+          
         } catch (error) {
-          alert('Invalid credentials');
+          console.error("Error:", error.response ? error.response.data : error.message);
+          alert('Error: ' + (error.response ? error.response.data.message : "Server not reachable"));
         }
       }
     }

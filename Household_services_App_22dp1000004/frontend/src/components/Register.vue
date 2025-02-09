@@ -4,7 +4,7 @@
       <form @submit.prevent="registerUser">
         <div class="mb-3">
           <label class="form-label">Full Name</label>
-          <input type="text" class="form-control" v-model="form.name" required />
+          <input type="text" class="form-control" v-model="form.username" required />
         </div>
         <div class="mb-3">
           <label class="form-label">Email</label>
@@ -43,16 +43,20 @@
     },
     methods: {
       async registerUser() {
+        console.log("Submitting form:", this.form);
         try {
-          const response = await axios.post('http://localhost:5000/api/register', this.form);
-          alert('Registration Successful!');
-          this.$router.push(`/${this.form.role}`);
+          const response = await axios.post('http://localhost:5858/auth/register', this.form);
+          console.log("API Response:", response?.data || "No Data");
+          alert('Registration Successful! Please log in.');
+          this.$router.push('/login');
         } catch (error) {
-          alert('Registration Failed: ' + error.response.data.message);
+          console.error("Error:", error.response ? error.response.data : error.message);
+          alert('Error: ' + (error.response ? error.response.data.message : "Server not reachable"));
         }
       },
     },
   };
+
   </script>
   
   <style scoped>
@@ -60,4 +64,3 @@
     max-width: 500px;
   }
   </style>
-  
