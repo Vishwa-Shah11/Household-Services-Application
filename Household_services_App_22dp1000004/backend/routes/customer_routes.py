@@ -1,9 +1,19 @@
 from flask import Blueprint, request, jsonify
 from models import db, service, service_request, user
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from datetime import datetime
 
 customer_bp = Blueprint('customer', __name__, url_prefix='/customer')
+
+@customer_bp.route('/dashboard', methods=['GET'])
+@jwt_required()
+def customer_dashboard():
+    current_user = get_jwt_identity()
+    claims = get_jwt()
+    if claims['role'] != 'customer':
+        return jsonify({"msg": "Customer only!"}), 403
+    return jsonify({'message': f'Welcome to Customer Dashboard, {current_user["id"]}'}), 200
+
 
 # 1. Create a new service request
 @customer_bp.route('/service_request', methods=['POST'])

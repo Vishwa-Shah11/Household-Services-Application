@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, user, service
+from models import db, User, Service
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from utils import role_required
 
@@ -7,7 +7,7 @@ admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 # Admin Dashboard
 @admin_bp.route('/dashboard', methods=['GET'])
-@role_required('Admin')
+@role_required('admin')
 @jwt_required()
 def admin_dashboard():
     claims = get_jwt()
@@ -25,7 +25,7 @@ def flag_user(user_id):
     if claims['role'] != 'admin':
         return jsonify({"msg": "Admins only!"}), 403
 
-    target_user = user.query.get_or_404(user_id)
+    target_user = User.query.get_or_404(user_id)
     target_user.tokens_revoked = True  # Revoke the user's tokens
     target_user.is_blocked = True  # Block the user
     db.session.commit()
@@ -41,7 +41,7 @@ def approve_user(user_id):
     if claims['role'] != 'admin':
         return jsonify({"msg": "Admins only!"}), 403
 
-    target_user = user.query.get_or_404(user_id)
+    target_user = User.query.get_or_404(user_id)
     if target_user.role != 'professional':
         return jsonify({"error": "Only professionals can be approved"}), 400
 
@@ -56,17 +56,25 @@ def approve_user(user_id):
 @jwt_required()
 def create_service():
     data = request.json
-    if not all(key in data for key in ('name', 'base_price', 'description')):
+    required_fields = ('name', 'base_price', 'description');
+
+    if not all(key in data for key in required_fields):
         return jsonify({"error": "Missing required fields"}), 400
 
-    new_service = service(
-        name=data['name'],
-        base_price=data['base_price'],
-        description=data['description']
-    )
-    db.session.add(new_service)
-    db.session.commit()
-    return jsonify({'message': 'Service created successfully'}), 201
+    try :
+        new_service = Service(
+            name=data['name'],
+            base_price=data['base_price'],
+            description=data['description'],
+            time_required=data.get('time_required', 0)
+        )
+        db.session.add(new_service)
+        db.session.commit()
+        return jsonify({'message': 'Service created successfully'}), 201
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 
 # Update an Existing Service
@@ -78,7 +86,7 @@ def update_service(service_id):
     if claims['role'] != 'admin':
         return jsonify({"msg": "Admins only!"}), 403
 
-    existing_service = service.query.get_or_404(service_id)
+    existing_service = Service.query.get_or_404(service_id)
     data = request.json
     existing_service.name = data.get('name', existing_service.name)
     existing_service.base_price = data.get('base_price', existing_service.base_price)
@@ -97,7 +105,7 @@ def delete_service(service_id):
     if claims['role'] != 'admin':
         return jsonify({"msg": "Admins only!"}), 403
 
-    existing_service = service.query.get_or_404(service_id)
+    existing_service = Service.query.get_or_404(service_id)
     db.session.delete(existing_service)
     db.session.commit()
     return jsonify({"msg": "Service deleted successfully"}), 200
@@ -112,7 +120,7 @@ def get_all_users():
     if claims['role'] != 'admin':
         return jsonify({"msg": "Admins only!"}), 403
 
-    all_users = user.query.all()
+    all_users = User.query.all()
     result = [
         {
             'id': u.id,
@@ -137,14 +145,14 @@ def search_professionals():
         return jsonify({'error': 'Admins only!'}), 403
 
     query_params = request.args
-    filters = [user.role == 'Professional']
+    filters = [User.role == 'Professional']
 
     if 'name' in query_params:
-        filters.append(user.name.ilike(f"%{query_params['name']}%"))
+        filters.append(User.name.ilike(f"%{query_params['name']}%"))
     if 'email' in query_params:
-        filters.append(user.email.ilike(f"%{query_params['email']}%"))
+        filters.append(User.email.ilike(f"%{query_params['email']}%"))
 
-    professionals = user.query.filter(*filters).all()
+    professionals = User.query.filter(*filters).all()
     results = [{'id': p.id, 'name': p.name, 'email': p.email, 'is_approved': p.is_approved, 'is_blocked': p.is_blocked} for p in professionals]
 
     return jsonify({'professionals': results}), 200

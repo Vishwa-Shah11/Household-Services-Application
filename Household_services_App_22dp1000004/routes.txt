@@ -14,11 +14,13 @@ auth.logout                             POST     /auth/logout
 auth.register                           POST     /auth/register
 customer.close_service_request          PUT      /customer/service_request/<int:request_id>/close
 customer.create_service_request         POST     /customer/service_request
+customer.customer_dashboard             GET      /customer/dashboard
 customer.edit_service_request           PUT      /customer/service_request/<int:request_id>
 customer.search_services                GET      /customer/search_services
 home                                    GET      /home
 home                                    GET      /
 professional.action_on_service_request  PUT      /professional/service_request/<int:request_id>/action
 professional.close_service_request      PUT      /professional/service_request/<int:request_id>/close
+professional.professional_dashboard     GET      /professional/dashboard
 professional.view_all_service_requests  GET      /professional/service_requests
 static                                  GET      /static/<path:filename>

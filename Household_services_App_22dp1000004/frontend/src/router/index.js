@@ -10,9 +10,9 @@ const routes = [
     { path: '/', redirect: '/login' },
     { path: '/login', component: Login },
     { path: '/register', component: Register },
-    { path: '/admin', component: AdminDashboard, meta: { requiresAuth: true } },
-    { path: '/customer', component: CustomerDashboard, meta: { requiresAuth: true } },
-    { path: '/professional', component: ProfessionalDashboard, meta: { requiresAuth: true } },
+    { path: '/admin/dashboard', component: AdminDashboard, meta: { requiresAuth: true } },
+    { path: '/customer/dashboard', component: CustomerDashboard, meta: { requiresAuth: true } },
+    { path: '/professional/dashboard', component: ProfessionalDashboard, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

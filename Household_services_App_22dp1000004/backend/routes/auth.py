@@ -67,7 +67,7 @@ def login():
 
         # Generate JWT token
         access_token = create_access_token(identity={'id': new_user.id, 'role': new_user.role})
-        return jsonify({'message': 'Login successful', 'token': access_token}), 200
+        return jsonify({'message': 'Login successful', 'token': access_token, 'role': new_user.role}), 200
     
     except Exception as e:
         print(f"Error in login function: {str(e)}")  # Logs error for debugging

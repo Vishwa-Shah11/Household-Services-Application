@@ -1,9 +1,19 @@
 from flask import Blueprint, request, jsonify
 from models import db, service_request, user
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from datetime import datetime
 
 professional_bp = Blueprint('professional', __name__, url_prefix='/professional')
+
+@professional_bp.route('/dashboard', methods=['GET'])
+@jwt_required()
+def professional_dashboard():
+    current_user = get_jwt_identity()
+    claims = get_jwt()
+    if claims['role'] != 'professional':
+        return jsonify({"msg": "Professional only!"}), 403
+    return jsonify({'message': f'Welcome to Professional Dashboard, {current_user["id"]}'}), 200
+
 
 # 1. View all service requests
 @professional_bp.route('/service_requests', methods=['GET'])
