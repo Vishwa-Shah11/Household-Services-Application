@@ -82,18 +82,38 @@ def create_service():
 @role_required('Admin')
 @jwt_required()
 def update_service(service_id):
-    claims = get_jwt()
-    if claims['role'] != 'admin':
-        return jsonify({"msg": "Admins only!"}), 403
-
-    existing_service = Service.query.get_or_404(service_id)
     data = request.json
+    if not data:
+        return jsonify({"error": "No update data provided"}), 400
+    
+    existing_service = Service.query.get_or_404(service_id)
+    if not existing_service:
+        return jsonify({"error": "Service not found"}), 404
+    
     existing_service.name = data.get('name', existing_service.name)
     existing_service.base_price = data.get('base_price', existing_service.base_price)
     existing_service.description = data.get('description', existing_service.description)
-    db.session.commit()
 
-    return jsonify({"msg": "Service updated successfully"}), 200
+    try :
+        db.session.commit()
+        return jsonify({"msg": "Service updated successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Failed to update service: {str(e)}"}), 500
+
+@admin_bp.route('/services', methods=['GET'])
+@role_required('Admin')
+@jwt_required()
+def get_services():
+    services = Service.query.all()
+    service_list = [{
+        "id": s.id,
+        "name": s.name,
+        "base_price": s.base_price,
+        "description": s.description
+    } for s in services]
+
+    return jsonify({"services": service_list}), 200
 
 
 # Delete an Existing Service
