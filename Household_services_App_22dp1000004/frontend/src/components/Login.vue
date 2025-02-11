@@ -35,9 +35,9 @@ const loginUser = async () => {
     localStorage.setItem('role', role); // Store role
 
     // Redirect user based on role
-    if (role === 'admin') {
+    if (role === 'Admin') {
       router.push('/admin/dashboard');
-    } else if (role === 'professional') {
+    } else if (role === 'Professional') {
       router.push('/professional/dashboard');
     } else {
       router.push('/customer/dashboard');

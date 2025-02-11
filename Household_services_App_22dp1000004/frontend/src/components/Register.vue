@@ -17,9 +17,9 @@
         <div class="mb-3">
           <label class="form-label">Role</label>
           <select class="form-control" v-model="form.role" required>
-            <option value="admin">Admin</option>
-            <option value="professional">Professional</option>
-            <option value="customer">Customer</option>
+            <option value="Admin">Admin</option>
+            <option value="Professional">Professional</option>
+            <option value="Customer">Customer</option>
           </select>
         </div>
         <button type="submit" class="btn btn-primary">Register</button>

@@ -7,11 +7,11 @@ admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 # Admin Dashboard
 @admin_bp.route('/dashboard', methods=['GET'])
-@role_required('admin')
+@role_required('Admin')
 @jwt_required()
 def admin_dashboard():
     claims = get_jwt()
-    if claims['role'] != 'admin':
+    if claims['role'] != 'Admin':
         return jsonify({"msg": "Admins only!"}), 403
     return jsonify({"msg": "Welcome to the admin dashboard!"}), 200
 

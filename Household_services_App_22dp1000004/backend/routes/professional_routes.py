@@ -10,7 +10,7 @@ professional_bp = Blueprint('professional', __name__, url_prefix='/professional'
 def professional_dashboard():
     current_user = get_jwt_identity()
     claims = get_jwt()
-    if claims['role'] != 'professional':
+    if claims['role'] != 'Professional':
         return jsonify({"msg": "Professional only!"}), 403
     return jsonify({'message': f'Welcome to Professional Dashboard, {current_user["id"]}'}), 200
 
@@ -24,7 +24,7 @@ def view_all_service_requests():
     # Check if the user is a professional
     professional = user.query.filter_by(id=professional_id, role='Professional').first()
     if not professional:
-        return jsonify({'error': 'Only professionals can access this endpoint'}), 403
+        return jsonify({'error': 'Only Professionals can access this endpoint'}), 403
 
     service_requests = service_request.query.filter_by(professional_id=professional_id).all()
     results = [
@@ -52,7 +52,7 @@ def action_on_service_request(request_id):
     # Check if the user is a professional
     professional = user.query.filter_by(id=professional_id, role='Professional').first()
     if not professional:
-        return jsonify({'error': 'Only professionals can access this endpoint'}), 403
+        return jsonify({'error': 'Only Professionals can access this endpoint'}), 403
 
     serviceRequest = service_request.query.filter_by(id=request_id).first()
     if not serviceRequest:
@@ -86,7 +86,7 @@ def close_service_request(request_id):
     # Check if the user is a professional
     professional = user.query.filter_by(id=professional_id, role='Professional').first()
     if not professional:
-        return jsonify({'error': 'Only professionals can access this endpoint'}), 403
+        return jsonify({'error': 'Only Professionals can access this endpoint'}), 403
 
     serviceRequest = service_request.query.filter_by(id=request_id, professional_id=professional_id).first()
     if not serviceRequest:

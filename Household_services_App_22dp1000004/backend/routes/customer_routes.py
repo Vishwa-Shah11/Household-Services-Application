@@ -10,7 +10,7 @@ customer_bp = Blueprint('customer', __name__, url_prefix='/customer')
 def customer_dashboard():
     current_user = get_jwt_identity()
     claims = get_jwt()
-    if claims['role'] != 'customer':
+    if claims['role'] != 'Customer':
         return jsonify({"msg": "Customer only!"}), 403
     return jsonify({'message': f'Welcome to Customer Dashboard, {current_user["id"]}'}), 200
 
