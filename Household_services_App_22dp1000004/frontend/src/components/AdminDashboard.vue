@@ -71,16 +71,28 @@ export default {
   methods: {
     async fetchServices() {
       try {
-        const response = await fetch("/admin/services", {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("User not authenticated.");
+        }
+        const response = await fetch("http://127.0.0.1:5858/admin/services", {
           method: "GET",
-          headers: { Authorization: `Bearer ${this.token}` }
+          headers: { 
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"  
+          }
         });
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`API Error: ${errorText}`);
+        }
         const data = await response.json();
         this.services = data.services;
       } catch (error) {
         console.error("Error fetching services:", error);
       }
     },
+
     async createService() {
       try {
         const response = await fetch("/admin/create_service", {
@@ -93,8 +105,12 @@ export default {
         });
         const data = await response.json();
         alert(data.message || data.error);
-        this.showCreateModal = false;
-        this.fetchServices();
+        if (response.ok) {
+          this.showCreateModal = false;
+          this.newService = { name: "", base_price: "", description: "" };
+          await this.fetchServices();
+        }
+        
       } catch (error) {
         console.error("Error creating service:", error);
       }

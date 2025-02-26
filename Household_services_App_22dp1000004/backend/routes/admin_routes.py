@@ -16,22 +16,6 @@ def admin_dashboard():
     return jsonify({"msg": "Welcome to the admin dashboard!"}), 200
 
 
-# Flag (Block) a User
-@admin_bp.route('/flag_user/<int:user_id>', methods=['POST'])
-@role_required('Admin')
-@jwt_required()
-def flag_user(user_id):
-    claims = get_jwt()
-    if claims['role'] != 'admin':
-        return jsonify({"msg": "Admins only!"}), 403
-
-    target_user = User.query.get_or_404(user_id)
-    target_user.tokens_revoked = True  # Revoke the user's tokens
-    target_user.is_blocked = True  # Block the user
-    db.session.commit()
-    return jsonify({"msg": f"User {target_user.username} has been flagged and tokens revoked."}), 200
-
-
 # Approve a Professional
 @admin_bp.route('/approve_user/<int:user_id>', methods=['PUT'])
 @role_required('Admin')
@@ -101,6 +85,7 @@ def update_service(service_id):
         db.session.rollback()
         return jsonify({"error": f"Failed to update service: {str(e)}"}), 500
 
+
 @admin_bp.route('/services', methods=['GET'])
 @role_required('Admin')
 @jwt_required()
@@ -113,6 +98,7 @@ def get_services():
         "description": s.description
     } for s in services]
 
+    print("Fetched Services:", service_list)
     return jsonify({"services": service_list}), 200
 
 
@@ -176,3 +162,19 @@ def search_professionals():
     results = [{'id': p.id, 'name': p.name, 'email': p.email, 'is_approved': p.is_approved, 'is_blocked': p.is_blocked} for p in professionals]
 
     return jsonify({'professionals': results}), 200
+
+
+# Flag (Block) a User
+@admin_bp.route('/flag_user/<int:user_id>', methods=['POST'])
+@role_required('Admin')
+@jwt_required()
+def flag_user(user_id):
+    claims = get_jwt()
+    if claims['role'] != 'admin':
+        return jsonify({"msg": "Admins only!"}), 403
+
+    target_user = User.query.get_or_404(user_id)
+    target_user.tokens_revoked = True  # Revoke the user's tokens
+    target_user.is_blocked = True  # Block the user
+    db.session.commit()
+    return jsonify({"msg": f"User {target_user.username} has been flagged and tokens revoked."}), 200
