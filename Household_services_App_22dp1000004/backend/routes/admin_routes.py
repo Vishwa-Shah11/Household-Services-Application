@@ -71,8 +71,8 @@ def update_service(service_id):
         return jsonify({"error": "No update data provided"}), 400
     
     existing_service = Service.query.get_or_404(service_id)
-    if not existing_service:
-        return jsonify({"error": "Service not found"}), 404
+    # if not existing_service:
+    #     return jsonify({"error": "Service not found"}), 404
     
     existing_service.name = data.get('name', existing_service.name)
     existing_service.base_price = data.get('base_price', existing_service.base_price)
@@ -80,7 +80,7 @@ def update_service(service_id):
 
     try :
         db.session.commit()
-        return jsonify({"msg": "Service updated successfully"}), 200
+        return jsonify({"message": "Service updated successfully"}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Failed to update service: {str(e)}"}), 500
