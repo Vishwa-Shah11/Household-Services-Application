@@ -22,6 +22,7 @@
           <td>{{ service.description }}</td>
           <td>
             <button @click="editService(service)" class="btn btn-warning">Update</button>
+            <button @click="deleteService(service.id)" class="btn btn-danger">Delete</button>
           </td>
         </tr>
       </tbody>
@@ -161,6 +162,29 @@ export default {
         console.error("Error updating service:", error);
         alert(error.message);
       }
+    },
+
+    async deleteService(serviceId) {
+      if (confirm("Are you sure you want to delete this service?")) {
+        try {
+          const response = await fetch(`http://127.0.0.1:5858/admin/delete_service/${serviceId}`, {
+            method: "DELETE",
+            headers: {
+              "Authorization": `Bearer ${localStorage.getItem("token")}`
+            }
+          });
+
+          if (response.ok) {
+            alert("Service deleted successfully!");
+            this.fetchServices(); // Refresh the services list
+          } else {
+            const errorData = await response.json();
+            alert("Error: " + errorData.message);
+          }
+        } catch (error) {
+          console.error("Error deleting service:", error);
+        }
+      }
     }
   },
 
@@ -176,6 +200,9 @@ export default {
   watch: {
     showCreateModal(newVal) {
       console.log("showCreateModal changed:", newVal);
+    },
+    showUpdateModal(newVal) {
+      console.log("showUpdateModal changed:", newVal);
     }
   }
 
@@ -185,7 +212,8 @@ export default {
 <style>
 /* Simple modal styling */
 .modal {
-  display: block !important; /* Override Bootstrap's display: none */
+  display: block !important;
+  /* Override Bootstrap's display: none */
   position: fixed;
   top: 50%;
   left: 50%;

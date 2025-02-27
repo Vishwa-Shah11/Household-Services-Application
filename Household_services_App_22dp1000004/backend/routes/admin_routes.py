@@ -107,14 +107,10 @@ def get_services():
 @role_required('Admin')
 @jwt_required()
 def delete_service(service_id):
-    claims = get_jwt()
-    if claims['role'] != 'admin':
-        return jsonify({"msg": "Admins only!"}), 403
-
     existing_service = Service.query.get_or_404(service_id)
     db.session.delete(existing_service)
     db.session.commit()
-    return jsonify({"msg": "Service deleted successfully"}), 200
+    return jsonify({"message": "Service deleted successfully"}), 200
 
 
 # Get All Users (Admin Overview)
