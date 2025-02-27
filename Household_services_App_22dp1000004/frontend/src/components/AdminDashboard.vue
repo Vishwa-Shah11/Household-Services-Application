@@ -43,15 +43,9 @@
         <button @click="showCreateModal = false" class="btn btn-danger">Close</button>
       </div>
     </div>
-    <!-- Alternative content when modal is hidden -->
-
-
-
-
-
 
     <!-- UPDATE SERVICE MODAL -->
-    <div v-if="showUpdateModal" class="modal">
+    <div v-if="showUpdateModal" class="custom-modal">
       <div class="modal-content">
         <h3>Update Service</h3>
         <input v-model="selectedService.name" placeholder="Service Name" />
@@ -100,14 +94,6 @@ export default {
       }
     },
 
-
-    openModal() {
-      console.log("Before setting: showCreateModal =", this.showCreateModal);
-      this.showCreateModal = true;
-      console.log("After setting: showCreateModal =", this.showCreateModal);
-    },
-
-
     async createService() {
       console.log("Create service button clicked!");
       try {
@@ -142,31 +128,6 @@ export default {
         console.error("Error creating service:", error);
       }
     },
-
-
-    // async createService() {
-    //   console.log("Create service button clicked!");
-    //   try {
-    //     const response = await fetch("http://127.0.0.1:5858/admin/create_service", {
-    //       method: "POST",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         "Authorization": `Bearer ${this.token}`
-    //       },
-    //       body: JSON.stringify(this.newService)
-    //     });
-    //     const data = await response.json();
-    //     alert(data.message || data.error);
-    //     if (response.ok) {
-    //       this.showCreateModal = false;
-    //       this.newService = { name: "", base_price: "", description: "" };
-    //       await this.fetchServices();
-    //     }
-
-    //   } catch (error) {
-    //     console.error("Error creating service:", error);
-    //   }
-    // },
 
     editService(service) {
       console.log("Edit service button clicked!", service);
@@ -211,7 +172,6 @@ export default {
   created() {
     console.log("Vue Instance Created:", this);
   },
-
 
   watch: {
     showCreateModal(newVal) {
