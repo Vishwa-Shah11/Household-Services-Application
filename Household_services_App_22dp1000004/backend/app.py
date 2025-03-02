@@ -5,7 +5,7 @@ from routes.admin_routes import admin_bp
 from routes.customer_routes import customer_bp
 from routes.professional_routes import professional_bp
 from config import Config
-from models import db
+from models import db, Service
 from flask_login import LoginManager
 from routes.auth import auth_bp
 
@@ -22,6 +22,7 @@ def create_app():
     jwt = JWTManager(app)
 
     CORS(app, resources={r"/*": {"origins": "*"}})
+    # CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
     # Register Blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')  # Auth routes
