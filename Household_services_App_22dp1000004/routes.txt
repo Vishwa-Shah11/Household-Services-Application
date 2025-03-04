@@ -6,8 +6,10 @@ admin.create_service                    POST     /admin/create_service
 admin.delete_service                    DELETE   /admin/delete_service/<int:service_id>
 admin.flag_user                         POST     /admin/flag_user/<int:user_id>
 admin.get_all_users                     GET      /admin/users
+admin.get_services                      GET      /admin/services
 admin.search_professionals              GET      /admin/search_professionals
 admin.update_service                    PUT      /admin/update_service/<int:service_id>
+auth.get_user_profile                   GET      /auth/profile
 auth.load_user                          GET      /auth/load_user
 auth.login                              POST     /auth/login
 auth.logout                             POST     /auth/logout
@@ -16,6 +18,7 @@ customer.close_service_request          PUT      /customer/service_request/<int:
 customer.create_service_request         POST     /customer/service_request
 customer.customer_dashboard             GET      /customer/dashboard
 customer.edit_service_request           PUT      /customer/service_request/<int:request_id>
+customer.get_available_services         GET      /customer/services
 customer.search_services                GET      /customer/search_services
 home                                    GET      /home
 home                                    GET      /

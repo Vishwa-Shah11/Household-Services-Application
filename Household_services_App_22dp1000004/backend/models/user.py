@@ -14,7 +14,7 @@ class User(db.Model, UserMixin):
     is_blocked = db.Column(db.Boolean, default=False)  # To block a user
 
     def __repr__(self):
-        return f"<User {self.name} ({self.role})>"
+        return f"<User {self.username} ({self.role})>"
 
     def set_password(self, password):
         """Hash and set password."""

@@ -4,7 +4,7 @@ import jwt
 from flask import current_app as app
 from models import db, User
 from flask_cors import cross_origin, CORS
-from flask_jwt_extended import create_access_token, jwt_required
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 CORS(auth_bp)
@@ -99,3 +99,18 @@ def load_user():
         return jsonify({'error': 'Token has expired'}), 401
     except jwt.InvalidTokenError:
         return jsonify({'error': 'Invalid token'}), 401
+
+@auth_bp.route('/profile', methods=['GET'])
+@jwt_required()
+def get_user_profile():
+    current_user = get_jwt_identity()  # Get user details from JWT
+    user_id = current_user['id']  # Extract only the ID
+    user = User.query.filter_by(id=user_id).first()  # Query with the extracted ID
+    
+    # print("usr:", user)
+    
+    if user:
+        print("name:", user.username)
+        return jsonify({'name': user.username})
+    
+    return jsonify({'error': 'User not found'}), 404

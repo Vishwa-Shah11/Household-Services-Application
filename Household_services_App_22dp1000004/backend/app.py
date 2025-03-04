@@ -5,7 +5,7 @@ from routes.admin_routes import admin_bp
 from routes.customer_routes import customer_bp
 from routes.professional_routes import professional_bp
 from config import Config
-from models import db, Service
+from models import db
 from flask_login import LoginManager
 from routes.auth import auth_bp
 
@@ -44,5 +44,5 @@ def create_app():
     
 if __name__ =='__main__':
     app = create_app()
-    #db.create_all()
+    # print(app.url_map)
     app.run(host='0.0.0.0', port=5858, debug=True)
