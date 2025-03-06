@@ -27,7 +27,7 @@ def get_customer_id_from_token(token):
             return None
 
         customer_id = user_data["id"]
-        print(f"Found Customer ID: {customer_id}")
+        # print(f"Found Customer ID: {customer_id}")
         return customer_id
     except jwt.ExpiredSignatureError:
         print("Token Expired")

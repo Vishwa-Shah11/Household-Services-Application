@@ -65,7 +65,7 @@ def create_service_request():
         service_id=service.id,
         customer_id=customer_id,
         date_of_request=datetime.utcnow(),
-        service_status='requested',
+        service_status='Requested',
         remarks=data.get('remarks', '')  # Default empty remarks if not provided
     )
     db.session.add(new_request)
@@ -101,8 +101,6 @@ def fetch_requests():
         ])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
-
 
 
 # Edit an existing service request
@@ -111,11 +109,11 @@ def fetch_requests():
 @jwt_required()
 def edit_service_request(request_id):
     data = request.json
-    print("heeeeeeeetttttttttttttttttt",type(request))
+    print("heeeeeeeetttttttttttttttttt")
     token = request.headers.get("Authorization").split(" ")[1]  # Extract token
     
     customer_id = get_customer_id_from_token(token)  # Get customer ID from token
-    print(customer_id)
+    print("customer_id : ", customer_id)
 
     if not customer_id:
         return jsonify({'error': 'Unauthorized'}), 401
@@ -130,6 +128,7 @@ def edit_service_request(request_id):
         try:
             # Parse the incoming date from format "10-03-2025 02:15 PM"
             service_request.date_of_request = datetime.strptime(data['date_of_request'], '%d-%m-%Y %I:%M %p')
+            print("hellooooooooooooooooooo", service_request.date_of_request)
         except ValueError:
             return jsonify({'error': 'Invalid date format. Use DD-MM-YYYY HH:MM AM/PM'}), 400
 
@@ -190,7 +189,7 @@ def close_service_request(request_id):
     if not service_request:
         return jsonify({'error': 'Service request not found'}), 404
 
-    service_request.service_status = 'closed'
+    service_request.service_status = 'Closed'
     service_request.date_of_completion = datetime.utcnow()
 
     db.session.commit()

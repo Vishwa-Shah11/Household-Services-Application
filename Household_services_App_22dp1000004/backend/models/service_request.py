@@ -8,7 +8,8 @@ class ServiceRequest(db.Model):
     professional_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     date_of_request = db.Column(db.DateTime, nullable=False)
     date_of_completion = db.Column(db.DateTime)
-    service_status = db.Column(db.String(20), nullable=False)  # requested/assigned/closed
+    service_status = db.Column(db.String(20), nullable=False)  # Requested/Assigned/Rejected/Closed
+    action = db.Column(db.String(20))  # Accepted/Rejected
     remarks = db.Column(db.Text)
 
     def __repr__(self):

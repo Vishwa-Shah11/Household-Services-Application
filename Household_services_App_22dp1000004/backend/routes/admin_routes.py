@@ -22,11 +22,11 @@ def admin_dashboard():
 @jwt_required()
 def approve_user(user_id):
     claims = get_jwt()
-    if claims['role'] != 'admin':
+    if claims['role'] != 'Admin':
         return jsonify({"msg": "Admins only!"}), 403
 
     target_user = User.query.get_or_404(user_id)
-    if target_user.role != 'professional':
+    if target_user.role != 'Professional':
         return jsonify({"error": "Only professionals can be approved"}), 400
 
     target_user.is_approved = True
@@ -40,7 +40,8 @@ def approve_user(user_id):
 @jwt_required()
 def create_service():
     data = request.json
-    required_fields = ('name', 'base_price', 'description');
+    print("Service Data:", data)
+    required_fields = ('name', 'category', 'base_price', 'description');
 
     if not all(key in data for key in required_fields):
         return jsonify({"error": "Missing required fields"}), 400
@@ -48,6 +49,7 @@ def create_service():
     try :
         new_service = Service(
             name=data['name'],
+            category=data['category'],
             base_price=data['base_price'],
             description=data['description'],
             time_required=data.get('time_required', 0)
@@ -85,7 +87,7 @@ def update_service(service_id):
         db.session.rollback()
         return jsonify({"error": f"Failed to update service: {str(e)}"}), 500
 
-
+#get all service list
 @admin_bp.route('/services', methods=['GET'])
 @role_required('Admin')
 @jwt_required()
@@ -94,6 +96,7 @@ def get_services():
     service_list = [{
         "id": s.id,
         "name": s.name,
+        "category": s.category,
         "base_price": s.base_price,
         "description": s.description
     } for s in services]

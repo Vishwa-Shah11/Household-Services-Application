@@ -32,7 +32,7 @@ def create_app():
 
     with app.app_context():
         db.init_app(app)
-        #db.drop_all() #drop tables
+        # db.drop_all() #drop tables
         db.create_all()  # Create tables
 
     @app.route('/')

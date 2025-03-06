@@ -9,6 +9,7 @@
         <tr>
           <th>ID</th>
           <th>Name</th>
+          <th>Category</th>
           <th>Base Price</th>
           <th>Description</th>
           <th>Actions</th>
@@ -18,6 +19,7 @@
         <tr v-for="service in services" :key="service.id">
           <td>{{ service.id }}</td>
           <td>{{ service.name }}</td>
+          <td>{{ service.category }}</td>
           <td>{{ service.base_price }}</td>
           <td>{{ service.description }}</td>
           <td>
@@ -38,6 +40,7 @@
       <div class="modal-content">
         <h3>Create New Service</h3>
         <input v-model="newService.name" placeholder="Service Name" />
+        <input v-model="newService.category" placeholder="Category" />
         <input v-model="newService.base_price" placeholder="Base Price" type="number" />
         <textarea v-model="newService.description" placeholder="Description"></textarea>
         <button @click="createService" class="btn btn-success">Submit</button>
@@ -119,7 +122,7 @@ export default {
         if (response.ok) {
           console.log("Service created successfully, closing modal...");
           this.showCreateModal = false;
-          this.newService = { name: "", base_price: "", description: "" };
+          this.newService = { name: "", category: "", base_price: "", description: "" };
           await this.fetchServices();
         } else {
           console.error("Failed to create service:", data.error);

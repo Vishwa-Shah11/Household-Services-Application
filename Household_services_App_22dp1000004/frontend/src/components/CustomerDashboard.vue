@@ -281,7 +281,7 @@ export default {
 
       // Format: "10-03-2025 02:15 PM"
       let formattedDate = `${day}-${month}-${year} ${hours}:${minutes} ${ampm}`;
-
+      console.log("Formatted Date:", formattedDate);
       this.selectedRequest.date_of_request = formattedDate;
     },
 
