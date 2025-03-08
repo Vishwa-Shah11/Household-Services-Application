@@ -41,7 +41,7 @@ def approve_user(user_id):
 def create_service():
     data = request.json
     print("Service Data:", data)
-    required_fields = ('name', 'category', 'base_price', 'description');
+    required_fields = ('name', 'category', 'base_price', 'description', 'time_required');
 
     if not all(key in data for key in required_fields):
         return jsonify({"error": "Missing required fields"}), 400
@@ -52,7 +52,7 @@ def create_service():
             category=data['category'],
             base_price=data['base_price'],
             description=data['description'],
-            time_required=data.get('time_required', 0)
+            time_required=data.get('time_required', 0) 
         )
         db.session.add(new_service)
         db.session.commit()
@@ -77,8 +77,10 @@ def update_service(service_id):
     #     return jsonify({"error": "Service not found"}), 404
     
     existing_service.name = data.get('name', existing_service.name)
+    existing_service.category = data.get('category', existing_service.category)
     existing_service.base_price = data.get('base_price', existing_service.base_price)
     existing_service.description = data.get('description', existing_service.description)
+    existing_service.time_required = data.get('time_required', existing_service.time_required)
 
     try :
         db.session.commit()
@@ -98,7 +100,8 @@ def get_services():
         "name": s.name,
         "category": s.category,
         "base_price": s.base_price,
-        "description": s.description
+        "description": s.description,
+        'time_required': s.time_required
     } for s in services]
 
     print("Fetched Services:", service_list)

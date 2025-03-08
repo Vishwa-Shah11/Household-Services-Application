@@ -4,6 +4,7 @@ import Login from '../components/Login.vue';
 import Register from '../components/Register.vue';
 import AdminDashboard from '../components/AdminDashboard.vue';
 import CustomerDashboard from '../components/CustomerDashboard.vue';
+import CategoryServices from '@/components/CategoryServices.vue';
 import ProfessionalDashboard from '../components/ProfessionalDashboard.vue';
 
 const routes = [
@@ -12,6 +13,7 @@ const routes = [
     { path: '/register', component: Register },
     { path: '/admin/dashboard', component: AdminDashboard, meta: { requiresAuth: true } },
     { path: '/customer/dashboard', component: CustomerDashboard, meta: { requiresAuth: true } },
+    { path: '/category/:category', component: CategoryServices, meta: { requiresAuth: true } },
     { path: '/professional/dashboard', component: ProfessionalDashboard, meta: { requiresAuth: true } },
 ];
 

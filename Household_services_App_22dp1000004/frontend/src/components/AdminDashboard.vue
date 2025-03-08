@@ -2,6 +2,9 @@
   <div class="container">
     <h2>Admin Dashboard</h2>
 
+    <!-- CREATE SERVICE BUTTON -->
+    <button @click="showCreateModal = true" class="btn btn-primary">Create New Service</button> <br />  <br />
+
     <!-- SERVICE LIST -->
     <h3>Services</h3>
     <table class="table">
@@ -12,8 +15,9 @@
           <th>Category</th>
           <th>Base Price</th>
           <th>Description</th>
+          <th>Time Required</th>
           <th>Actions</th>
-        </tr>
+        </tr> 
       </thead>
       <tbody>
         <tr v-for="service in services" :key="service.id">
@@ -22,6 +26,7 @@
           <td>{{ service.category }}</td>
           <td>{{ service.base_price }}</td>
           <td>{{ service.description }}</td>
+          <td>{{ service.time_required }} minutes</td>
           <td>
             <button @click="editService(service)" class="btn btn-warning">Update</button>
             <button @click="deleteService(service.id)" class="btn btn-danger">Delete</button>
@@ -29,9 +34,6 @@
         </tr>
       </tbody>
     </table>
-
-    <!-- CREATE SERVICE BUTTON -->
-    <button @click="showCreateModal = true" class="btn btn-primary">Create Service</button>
 
     <!-- CREATE SERVICE MODAL -->
     <!-- Modal Overlay -->
@@ -43,6 +45,16 @@
         <input v-model="newService.category" placeholder="Category" />
         <input v-model="newService.base_price" placeholder="Base Price" type="number" />
         <textarea v-model="newService.description" placeholder="Description"></textarea>
+        <input v-model="newService.time_required" placeholder="Time Required (minutes)" type="number" />
+        <!-- <input v-model="newService.image_url" placeholder="Image URL" />
+        <input v-model="newService.status" placeholder="Status" />
+        <input v-model="newService.is_active" placeholder="Is Active" />
+        <input v-model="newService.is_approved" placeholder="Is Approved" />
+        <input v-model="newService.is_rejected" placeholder="Is Rejected" />
+        <input v-model="newService.is_assigned" placeholder="Is Assigned" />
+        <input v-model="newService.is_completed" placeholder="Is Completed" />
+        <input v-model="newService.is_cancelled" placeholder="Is Cancelled" />
+        <input v-model="newService.is_paid" placeholder="Is Paid" /> -->
         <button @click="createService" class="btn btn-success">Submit</button>
         <button @click="showCreateModal = false" class="btn btn-danger">Close</button>
       </div>
@@ -53,8 +65,10 @@
       <div class="modal-content">
         <h3>Update Service</h3>
         <input v-model="selectedService.name" placeholder="Service Name" />
+        <input v-model="selectedService.category" placeholder="Category" />
         <input v-model="selectedService.base_price" placeholder="Base Price" type="number" />
         <textarea v-model="selectedService.description" placeholder="Description"></textarea>
+        <input v-model="selectedService.time_required" placeholder="Time Required" />
         <button @click="updateService" class="btn btn-success">Submit</button>
         <button @click="showUpdateModal = false" class="btn btn-danger">Close</button>
       </div>

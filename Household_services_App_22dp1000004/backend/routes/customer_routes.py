@@ -31,6 +31,25 @@ def customer_dashboard():
 #     print("shrijibava :" ,current_user)
 #     return jsonify({'message': f'Welcome to Customer Dashboard, {current_user["id"]}'}), 200
 
+@customer_bp.route('/categories', methods=['GET'])
+@jwt_required()
+def get_categories():
+    categories = db.session.query(Service.category).distinct().all()
+    return jsonify([category[0] for category in categories]), 200
+
+@customer_bp.route('/services/<category>', methods=['GET'])
+@jwt_required()
+def get_services_by_category(category):
+    services = Service.query.filter_by(category=category).all()
+    return jsonify([{
+        'id': service.id,
+        'name': service.name,
+        'description': service.description,
+        'base_price': service.base_price,
+        'time_required': service.time_required
+    } for service in services]), 200
+
+
 @customer_bp.route('/services', methods=['GET'])
 @jwt_required()
 def get_available_services():

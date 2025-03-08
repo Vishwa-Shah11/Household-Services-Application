@@ -2,6 +2,16 @@
   <div class="container mt-5">
     <h2><strong>Customer Dashboard</strong></h2>
 
+    <h3>Service Categories</h3>
+    <div class="row">
+      <div v-for="category in categories" :key="category" class="col-md-4 mb-3">
+        <div class="card p-3 text-center">
+          <h5>{{ category }}</h5>
+          <button @click="viewCategory(category)" class="btn btn-primary">View Services</button>
+        </div>
+      </div>
+    </div>
+
     <h3>Available Services</h3>
     <div v-if="services.length === 0">No services available.</div>
     <div v-for="service in services" :key="service.id" class="card my-3 p-3">
@@ -90,10 +100,27 @@ export default {
       remarks: "",
       serviceRequests: [],
       selectedRequest: null, // Store selected request for editing
-      showEditForm: false // Controls form visibility
+      showEditForm: false, // Controls form visibility
+      categories: [],
+      // categories: ['Saloon & Spa', 'Cleaning', 'Plumbing', 'Electrical', 'Carpentry', 'Appliance Repair', 'Pest Control', 'Others']
     };
   },
   methods: {
+    async fetchCategories() {
+      try {
+        const response = await fetch("http://127.0.0.1:5858/customer/categories", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        const result = await response.json();
+        this.categories = result;
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    },
+    viewCategory(category) {
+      this.$router.push(`/category/${category}`);
+    },
+
     async fetchServices() {
       try {
         const token = localStorage.getItem('token'); // Assuming you store JWT in localStorage
@@ -333,6 +360,7 @@ export default {
     }
   },
   mounted() {
+    this.fetchCategories();
     this.fetchServices();
     this.fetchServiceRequests();
   }
