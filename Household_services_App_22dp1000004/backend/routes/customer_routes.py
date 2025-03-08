@@ -20,35 +20,28 @@ def customer_dashboard():
         print("❌ ERROR:", e)
         return jsonify({"error": "Something went wrong"}), 500
 
-
-
-# @customer_bp.route('/dashboard', methods=['GET'])
-# @role_required('customer')
-# @jwt_required()
-# def customer_dashboard():
-#     print("hellooooooooooooooooooooooooo")
-#     current_user = get_jwt_identity()
-#     print("shrijibava :" ,current_user)
-#     return jsonify({'message': f'Welcome to Customer Dashboard, {current_user["id"]}'}), 200
-
 @customer_bp.route('/categories', methods=['GET'])
 @jwt_required()
 def get_categories():
     categories = db.session.query(Service.category).distinct().all()
-    return jsonify([category[0] for category in categories]), 200
+    # print("Categories : ", categories)
+    # print(type(categories),type(categories[0]),type(categories[0][0]))
+    # print(type(str(categories[0])))
+    return jsonify([str(category[0]) for category in categories]), 200
 
 @customer_bp.route('/services/<category>', methods=['GET'])
 @jwt_required()
 def get_services_by_category(category):
     services = Service.query.filter_by(category=category).all()
-    return jsonify([{
-        'id': service.id,
-        'name': service.name,
-        'description': service.description,
-        'base_price': service.base_price,
-        'time_required': service.time_required
-    } for service in services]), 200
-
+    return jsonify({
+        "services": [{
+            "id": service.id,
+            "name": service.name,
+            "description": service.description,
+            "base_price": service.base_price,
+            "time_required": service.time_required
+        } for service in services]
+    }), 200
 
 @customer_bp.route('/services', methods=['GET'])
 @jwt_required()
@@ -58,7 +51,7 @@ def get_available_services():
     service_list = [{
         "id": s.id,
         "name": s.name,
-        # "category": s.category,
+        "category": s.category,
         "base_price": s.base_price,
         "description": s.description,
         'time_required': s.time_required
@@ -97,28 +90,41 @@ def fetch_requests():
     print("🚀 REQUEST RECEIVED at /customer/fetch_requests")  # Debugging
     token = request.headers.get('Authorization')
     if not token:
+        print("❌ No Authorization token provided")
         return jsonify({"error": "Unauthorized"}), 401
 
     token = token.replace("Bearer ", "")  # Remove "Bearer " prefix
     customer_id = get_customer_id_from_token(token)
 
     if not customer_id:
+        print("❌ Invalid or expired token")
         return jsonify({"error": "Invalid or expired token"}), 401   
 
     try:
         service_requests = ServiceRequest.query.filter_by(customer_id=customer_id).all()
+        if not service_requests:
+            print("ℹ️ No service requests found for customer_id:", customer_id)
+            return jsonify({"service_requests": []}), 200  # Empty response instead of None
+        
+        response_data = []
+        for req in service_requests:
+            service = Service.query.get(req.service_id)
+            if not service:
+                print(f"⚠️ Service not found for service_id: {req.service_id}")
+                continue
 
-        return jsonify([
-            {
-                "id": sr.id,
-                "service_id": sr.service_id,
-                "status": sr.service_status,
-                "remarks": sr.remarks,
-                "date_of_request": sr.date_of_request
-            }
-            for sr in service_requests
-        ])
+            response_data.append({
+                "id": req.id,
+                "service_id": req.service_id,
+                "service_name": service.name,
+                "status": req.service_status,
+                "remarks": req.remarks,
+                "date_of_request": req.date_of_request.strftime('%d-%m-%Y %I:%M %p')
+            })
+        # print("✅ Service Requests Found:", response_data)
+        return jsonify({"service_requests": response_data}), 200
     except Exception as e:
+        print("❌ Error fetching service requests:", str(e))
         return jsonify({"error": str(e)}), 500
 
 
@@ -128,7 +134,7 @@ def fetch_requests():
 @jwt_required()
 def edit_service_request(request_id):
     data = request.json
-    print("heeeeeeeetttttttttttttttttt")
+    print("edit_service_request data : ", data)
     token = request.headers.get("Authorization").split(" ")[1]  # Extract token
     
     customer_id = get_customer_id_from_token(token)  # Get customer ID from token

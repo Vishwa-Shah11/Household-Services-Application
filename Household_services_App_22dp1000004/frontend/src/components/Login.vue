@@ -12,7 +12,7 @@
       </div>
       <button type="submit" class="btn btn-primary">Login</button><br><br><br>
        New user?
-      <router-link to="/register">Register Here</router-link>
+      <router-link to="/register">Create Account</router-link>
       <div v-if="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
     </form>
 

@@ -2,29 +2,13 @@
     <div class="container mt-5">
         <h2>{{ category }} Services</h2>
         <div v-if="services.length === 0">No services available.</div>
-        <p>{{ services.length }}</p>
+        <!-- <p>{{ services.length }}</p> -->
         <div v-for="service in services" :key="service.id" class="card my-3 p-3">
             <h5>{{ service.name }}</h5>
             <p>{{ service.description }}</p>
             <p><strong>Price:</strong> {{ service.base_price }}</p>
             <p><strong>Time Required:</strong> {{ service.time_required }} minutes</p>
             <button @click="requestService(service.id)" class="btn btn-primary">Request Service</button>
-        </div>
-
-        <div class="card p-3 mt-4">
-            <h5><strong>Your Service Requests</strong></h5>
-            <ul v-if="serviceRequests.length > 0" class="list-group">
-                <li v-for="request in serviceRequests" :key="request.id" class="list-group-item">
-                <li v-for="service in services" :key="service.id" class="list-group-item">
-                    <strong>Service Name:</strong> {{ service_name }} <br />
-                    <strong>Allocated Date:</strong> {{ request.date_of_request }} <br />
-                    <strong>Status:</strong> {{ request.service_status }} <br />
-                    <button @click="editServiceRequest(request)" class="btn btn-warning btn-sm mt-2">Edit</button>
-                    <button @click="closeServiceRequest(request.id)" class="btn btn-danger btn-sm mt-2">Close</button>
-                </li>
-                </li>
-            </ul>
-            <p v-else>No service requests found.</p>
         </div>
 
         <div v-if="showEditForm" class="card p-3 mt-4">
@@ -63,12 +47,24 @@ export default {
         async fetchServices() {
             try {
                 const token = localStorage.getItem('token');
+                console.log("Fetching services for category:", this.category);
                 const response = await axios.get(`http://127.0.0.1:5858/customer/services/${this.category}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                this.services = response.data.services;
+                console.log("Response:", response.data);
+                console.log("Services fetched successfully:", response.data.services);
+
+                if (response.data && response.data.services) {
+                    this.services = response.data.services;
+                    console.log("Services fetched successfully:", this.services);
+                } else {
+                    this.services = [];
+                    console.warn("No services found for this category.");
+                }
+
             } catch (error) {
                 console.error('Error fetching services:', error);
+                this.services = [];
             }
         },
         async requestService(serviceId) {
@@ -91,9 +87,11 @@ export default {
                 const response = await axios.get('http://127.0.0.1:5858/customer/fetch_requests', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                this.serviceRequests = response.data || [];
+                console.log("🛠️ API Response:", response.data.service_requests);
+                this.serviceRequests = response.data.service_requests || [];
+                console.log("✅ Updated serviceRequests:", this.serviceRequests);
             } catch (error) {
-                console.error('Error fetching service requests:', error);
+                console.error("❌ Error fetching service requests:", error);
             }
         },
         editServiceRequest(request) {
