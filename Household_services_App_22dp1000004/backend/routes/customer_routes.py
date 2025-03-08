@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, Service, ServiceRequest, User
+from models import db, Service, ServiceRequest
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 from utils import role_required, get_customer_id_from_token
@@ -203,22 +203,34 @@ def edit_service_request(request_id):
 #         return jsonify({'error': f'An unexpected error occurred: {str(e)}'}), 500
 
 
-# Close an existing service request
+# Close an existing service request with rating & remarks
 @customer_bp.route('/fetch_requests/<int:request_id>/close', methods=['PUT'])
 @role_required('Customer')
 @jwt_required()
 def close_service_request(request_id):
     customer_id = get_jwt_identity()['id']
-
     service_request = ServiceRequest.query.filter_by(id=request_id, customer_id=customer_id).first()
+
     if not service_request:
         return jsonify({'error': 'Service request not found'}), 404
 
+    # Get rating & remarks from frontend
+    data = request.get_json()
+    rating = data.get('rating', None)
+    remarks = data.get('remarks', '')
+
+    if not rating or not (1 <= rating <= 5):
+        return jsonify({'error': 'Invalid rating. Must be between 1 to 5.'}), 400
+
+    # Update service request
     service_request.service_status = 'Closed'
     service_request.date_of_completion = datetime.utcnow()
+    service_request.remarks = remarks  # Store remarks
+    service_request.rating = rating  # Store rating (Ensure the model has this column)
 
     db.session.commit()
     return jsonify({'message': 'Service request closed successfully'}), 200
+
 
 
 # Search for available services
