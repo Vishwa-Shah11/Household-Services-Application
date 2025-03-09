@@ -11,7 +11,7 @@
             <button @click="requestService(service.id)" class="btn btn-primary">Request Service</button>
         </div>
 
-        <div v-if="showEditForm" class="card p-3 mt-4">
+        <!-- <div v-if="showEditForm" class="card p-3 mt-4">
             <h3>Edit Service Request</h3>
             <label><strong>Request Date & Time:</strong></label>
             <input type="datetime-local" v-model="selectedRequest.date_of_request" class="form-control mb-2" />
@@ -25,7 +25,7 @@
             <textarea v-model="selectedRequest.remarks" class="form-control mb-2"></textarea>
             <button @click="updateServiceRequest" class="btn btn-success">Update</button>
             <button @click="showEditForm = false" class="btn btn-secondary">Cancel</button>
-        </div>
+        </div> -->
     </div>
 </template>
 
@@ -94,38 +94,25 @@ export default {
                 console.error("❌ Error fetching service requests:", error);
             }
         },
-        editServiceRequest(request) {
-            this.selectedRequest = { ...request };
-            this.showEditForm = true;
-        },
-        async updateServiceRequest() {
-            try {
-                const token = localStorage.getItem('token');
-                const response = await axios.put(`http://127.0.0.1:5858/customer/update_request/${this.selectedRequest.id}`,
-                    this.selectedRequest,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-                alert(response.data.message);
-                this.fetchServiceRequests();
-                this.showEditForm = false;
-            } catch (error) {
-                console.error('Error updating service request:', error);
-                alert('Failed to update request. Please try again.');
-            }
-        },
-        async closeServiceRequest(requestId) {
-            try {
-                const token = localStorage.getItem('token');
-                await axios.put(`http://127.0.0.1:5858/customer/close_request/${requestId}`, {},
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-                alert('Service request closed successfully.');
-                this.fetchServiceRequests();
-            } catch (error) {
-                console.error('Error closing service request:', error);
-                alert('Failed to close request. Please try again.');
-            }
-        }
+        // editServiceRequest(request) {
+        //     this.selectedRequest = { ...request };
+        //     this.showEditForm = true;
+        // },
+        // async updateServiceRequest() {
+        //     try {
+        //         const token = localStorage.getItem('token');
+        //         const response = await axios.put(`http://127.0.0.1:5858/customer/update_request/${this.selectedRequest.id}`,
+        //             this.selectedRequest,
+        //             { headers: { Authorization: `Bearer ${token}` } }
+        //         );
+        //         alert(response.data.message);
+        //         this.fetchServiceRequests();
+        //         this.showEditForm = false;
+        //     } catch (error) {
+        //         console.error('Error updating service request:', error);
+        //         alert('Failed to update request. Please try again.');
+        //     }
+        // },
     },
     mounted() {
         this.fetchServices();

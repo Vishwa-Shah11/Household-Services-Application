@@ -7,6 +7,8 @@ import CustomerDashboard from '../components/CustomerDashboard.vue';
 import CategoryServices from '@/components/CategoryServices.vue';
 import ProfessionalDashboard from '../components/ProfessionalDashboard.vue';
 import ServiceRemarks from '@/components/ServiceRemarks.vue';
+import SearchService from '@/components/SearchService.vue';
+import ServiceDetails from '@/components/ServiceDetails.vue';
 
 const routes = [
     { path: '/', redirect: '/login' },
@@ -16,6 +18,8 @@ const routes = [
     { path: '/customer/dashboard', component: CustomerDashboard, meta: { requiresAuth: true } },
     { path: '/category/:category', component: CategoryServices, meta: { requiresAuth: true } },
     { path: "/service-remarks/:requestId", component: ServiceRemarks },
+    { path: "/service/search", component: SearchService },
+    { path: '/service/:id', component: ServiceDetails },
     { path: '/professional/dashboard', component: ProfessionalDashboard, meta: { requiresAuth: true } },
 ];
 

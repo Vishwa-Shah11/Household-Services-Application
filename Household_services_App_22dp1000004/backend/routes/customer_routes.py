@@ -152,7 +152,8 @@ def edit_service_request(request_id):
     if 'date_of_request' in data:
         try:
             # Parse the incoming date from format "10-03-2025 02:15 PM"
-            service_request.date_of_request = datetime.strptime(data['date_of_request'], '%d-%m-%Y %I:%M %p')
+            # service_request.date_of_request = datetime.strptime(data['date_of_request'], '%d-%m-%Y %I:%M %p')
+            service_request.date_of_request = service_request.date_of_request.replace(tzinfo=None)
             print("hellooooooooooooooooooo", service_request.date_of_request)
         except ValueError:
             return jsonify({'error': 'Invalid date format. Use DD-MM-YYYY HH:MM AM/PM'}), 400
@@ -230,26 +231,3 @@ def close_service_request(request_id):
 
     db.session.commit()
     return jsonify({'message': 'Service request closed successfully'}), 200
-
-
-
-# Search for available services
-@customer_bp.route('/search_services', methods=['GET'])
-@role_required('Customer')
-@jwt_required()
-def search_services():
-    query_params = request.args
-    filters = []
-
-    if 'name' in query_params:
-        filters.append(Service.name.ilike(f"%{query_params['name']}%"))
-    if 'location' in query_params:  # Assuming a location field exists in the service model
-        filters.append(Service.location.ilike(f"%{query_params['location']}%"))
-    if 'pin_code' in query_params:  # Assuming a pin_code field exists in the service model
-        filters.append(Service.pin_code == query_params['pin_code'])
-
-    services = Service.query.filter(*filters).all()
-    results = [{'id': s.id, 'name': s.name, 'description': s.description, 'base_price': s.base_price} for s in services]
-
-    return jsonify({'services': results}), 200
-

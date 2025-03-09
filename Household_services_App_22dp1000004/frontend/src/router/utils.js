@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export async function getUserName() {
   console.log(localStorage);
-  let userName = localStorage.getItem('user_name');
+  let userName = localStorage.getItem('username');
   console.log('userName', userName);
   const token = localStorage.getItem('token');
 
@@ -13,7 +13,7 @@ export async function getUserName() {
       });
 
       userName = response.data.name; // API returns { "name": "user name" }
-      localStorage.setItem('user_name', userName); // Store in localStorage
+      localStorage.setItem('username', userName); // Store in localStorage
     } catch (error) {
       console.error('Error fetching user name:', error);
     }

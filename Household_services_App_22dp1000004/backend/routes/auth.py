@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 from flask import current_app as app
 from models import db, User
@@ -62,12 +62,19 @@ def login():
 
         # Find user by email
         new_user = User.query.filter_by(email=email).first()
-        if not new_user or not new_user.check_password(password):
-            return jsonify({'message': 'Invalid credentials'}), 401
+        print(new_user)
+        print(check_password_hash(new_user.password, password))
+        if not new_user or not check_password_hash(new_user.password, password):
+            return jsonify({'error': 'Invalid credentials'}), 401
 
         # Generate JWT token
-        access_token = create_access_token(identity={'id': new_user.id, 'role': new_user.role})
-        return jsonify({'message': 'Login successful', 'token': access_token, 'role': new_user.role}), 200
+        access_token = create_access_token(identity={'id': new_user.id, 'role': new_user.role, 'username': new_user.username})
+        return jsonify({
+            'message': 'Login successful', 
+            'token': access_token, 
+            'role': new_user.role, 
+            'username': new_user.username
+        }), 200
     
     except Exception as e:
         print(f"Error in login function: {str(e)}")  # Logs error for debugging
@@ -89,7 +96,7 @@ def load_user():
         return jsonify({'error': 'Token is missing'}), 403
 
     try:
-        data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        data = jwt.decode(token, app.config['JWT_SECRET_KEY'], algorithms=['HS256'])
         user = User.query.get(data['user_id'])
         if not user:
             return jsonify({'error': 'User not found'}), 404

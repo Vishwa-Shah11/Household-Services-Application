@@ -17,7 +17,7 @@ def role_required(required_role):
 
 def get_customer_id_from_token(token):
     try:
-        secret_key = "your_secret_key"  # Replace with your actual secret key
+        secret_key = "your_jwt_secret_key"  # Replace with your actual secret key
         decoded_token = jwt.decode(token, secret_key, algorithms=["HS256"])
         # print("Decoded Token:", decoded_token)
         # Extract user ID from 'sub'

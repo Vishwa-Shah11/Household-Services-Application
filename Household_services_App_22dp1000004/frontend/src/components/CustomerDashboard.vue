@@ -232,14 +232,6 @@ export default {
         alert("You are not authenticated! Please log in again.");
         return;
       }
-      // const response = await fetch(`http://127.0.0.1:5858/customer/fetch_requests/${requestId}/close`, {
-      //   method: "PUT",
-      //   headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
-      // });
-      // if (response.ok) {
-      //   alert("Service request closed!");
-      //   this.fetchServiceRequests();
-      // }
       // Redirect user to the Service Remarks page before closing
       this.$router.push(`/service-remarks/${requestId}`);
     }

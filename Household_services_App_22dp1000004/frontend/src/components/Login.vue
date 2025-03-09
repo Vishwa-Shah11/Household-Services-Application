@@ -11,7 +11,7 @@
         <input type="password" v-model="password" class="form-control" required />
       </div>
       <button type="submit" class="btn btn-primary">Login</button><br><br><br>
-       New user?
+      New user?
       <router-link to="/register">Create Account</router-link>
       <div v-if="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
     </form>
@@ -31,53 +31,34 @@ const errorMessage = ref('');
 
 const loginUser = async () => {
   try {
-    const response = await axios.post('http://localhost:5858/auth/login', { email: email.value, password: password.value });
+    const response = await axios.post('http://127.0.0.1:5858/auth/login', {
+      email: email.value,
+      password: password.value
+    });
 
-    const { token, role } = response.data;
-    localStorage.setItem('token', token);
-    localStorage.setItem('role', role); // Store role
+    // console.log("API Response:", response);
+
+    if (response.data.token) {
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("role", response.data.role); // Stores correct role
+      localStorage.setItem("username", response.data.username); // Stores correct username
+    }
+    // console.log("Stored username:", localStorage.getItem("username"));
+    // console.log("Stored role:", localStorage.getItem("role"));
 
     // Redirect user based on role
-    if (role === 'Admin') {
+    if (response.data.role === 'Admin') {
       router.push('/admin/dashboard');
-    } else if (role === 'Professional') {
+    } else if (response.data.role === 'Professional') {
       router.push('/professional/dashboard');
-    } else {
+    } else  {
       router.push('/customer/dashboard');
     }
   } catch (error) {
-    errorMessage.value = 'Invalid credentials';
+    // errorMessage.value = 'Invalid credentials';
+    console.error("Login failed:", error.response?.data || error);
+    alert(error.response?.data?.error || "Invalid credentials");
   }
 };
 
-// export default {
-//   data() {
-//     return {
-//       email: '',
-//       password: ''
-//     };
-//   },
-//   methods: {
-//     async loginUser() {
-//       try {
-//         const response = await axios.post('http://localhost:5858/auth/login', {
-//           email: this.email,
-//           password: this.password
-//         });
-
-//         localStorage.setItem('token', response.data.token);
-//         alert('Login Successful!');
-
-//         // Redirect based on role
-//         if (response.data.role === 'admin') this.$router.push('/admin');
-//         else if (response.data.role === 'professional') this.$router.push('/professional');
-//         else this.$router.push('/customer');
-
-//       } catch (error) {
-//         console.error("Error:", error.response ? error.response.data : error.message);
-//         alert('Error: ' + (error.response ? error.response.data.message : "Server not reachable"));
-//       }
-//     }
-//   }
-// };
 </script>

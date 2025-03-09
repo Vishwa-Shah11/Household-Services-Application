@@ -3,9 +3,8 @@
     <div class="container">
       <router-link class="navbar-brand" to="/">Home</router-link>
       <div class="navbar-nav">
-        <router-link class="nav-link" to="/admin" v-if="isAuthenticated">Admin</router-link>
-        <router-link class="nav-link" to="/professional" v-if="isAuthenticated">Professional</router-link>
-        <router-link class="nav-link" to="/customer" v-if="isAuthenticated">Customer</router-link>
+        <router-link class="nav-link" to="/service/search" v-if="isAuthenticated">Search</router-link>
+        <router-link class="nav-link" to="/summary" v-if="isAuthenticated">Summary</router-link>
         <button class="btn btn-danger ms-2" @click="logout" v-if="isAuthenticated">Logout</button>
       </div>
     </div>
@@ -19,10 +18,15 @@ export default {
     isAuthenticated() {
       return localStorage.getItem('token') !== null;
     },
+    userRole() {
+      const user = JSON.parse(localStorage.getItem('username')); // Assuming user role is stored
+      return user ? user.role : null;
+    }
   },
   methods: {
     logout() {
       localStorage.removeItem('token');
+      localStorage.removeItem('username'); // Remove user details
       this.$router.push('/login');
     },
   },
