@@ -122,16 +122,21 @@ def get_all_users():
 
 
 # Approve a Professional
-@admin_bp.route('/approve/<int:user_id>', methods=['PUT'])
+@admin_bp.route('/approve/<int:user_id>', methods=['POST'])
 @role_required('Admin')
 @jwt_required()
 def approve_user(user_id):
+    # print(f"Approval request received for user ID: {user_id}")
     target_user = User.query.get_or_404(user_id)
+    # print("Target User:", target_user)
     if target_user and target_user.role == "Professional":
+        # print(f"Approving user: {target_user.username}")
         target_user.is_approved = True
         db.session.commit()
-        return jsonify({"message": f"User {target_user.username} has been approved."}), 200
-    return jsonify({"error": "User not found or invalid role"}), 404
+        # print(f"User {target_user.username} has been approved.")
+        return jsonify({"message": f"User {target_user.username} has been approved.", "username": target_user.username}), 200
+    # print("Approval not applicable.")
+    return jsonify({"error": "Approval not applicable"}), 404
 
 @admin_bp.route("/reject/<int:user_id>", methods=["POST"])
 @role_required("Admin")
@@ -141,8 +146,8 @@ def reject_user(user_id):
     if target_user and target_user.role == "Professional":
         target_user.is_approved = False
         db.session.commit()
-        return jsonify({"message": f"User {target_user.username} has been approved."}), 200
-    return jsonify({"error": "User not found or invalid role"}), 404
+        return jsonify({"message": f"User {target_user.username} has been rejected.", "username": target_user.username}), 200
+    return jsonify({"error": "Rejection not applicable"}), 404
 
 # Admin search for professionals
 @admin_bp.route('/search_professionals', methods=['GET'])

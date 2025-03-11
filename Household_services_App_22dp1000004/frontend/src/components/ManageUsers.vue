@@ -97,12 +97,24 @@ const approveUser = async (userId) => {
             headers: { "Authorization": `Bearer ${token}` },
         });
 
-        // Update UI
-        const user = users.value.find(user => user.id === userId);
-        if (user) user.is_approved = true;
+        if (response.status === 200) {
+            const username = response.data.username;
+            // Update UI
+            const user = users.value.find(user => user.id === userId);
+            if (user) {
+                user.is_approved = true;
+                alert(`User ${username} has been approved!`);
+            }
+        } else {
+            console.error("Unexpected response:", response);
+            errorMessage.value = "Unexpected response received.";
+        }
 
     } catch (error) {
         console.error("Approval failed:", error);
+        if (error.response) {
+            console.error("Server response:", error.response.data);
+        }
         errorMessage.value = "Failed to approve user.";
     }
 };
@@ -119,12 +131,23 @@ const rejectUser = async (userId) => {
             headers: { "Authorization": `Bearer ${token}` },
         });
 
-        // Update UI
-        const user = users.value.find(user => user.id === userId);
-        if (user) user.is_approved = false;
-
+        if (response.status === 200) {
+            const username = response.data.username;
+            // Update UI
+            const user = users.value.find(user => user.id === userId);
+            if (user) {
+                user.is_approved = false;
+                alert(`User ${username} has been rejected!`);
+            }
+        } else {
+            console.error("Unexpected response:", response);
+            errorMessage.value = "Unexpected response received.";
+        }
     } catch (error) {
         console.error("Rejection failed:", error);
+        if (error.response) {
+            console.error("Server response:", error.response.data);
+        }
         errorMessage.value = "Failed to reject user.";
     }
 };
