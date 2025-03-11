@@ -9,12 +9,12 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
-    # pincode = db.Column(db.String(10))
-    # address = db.Column(db.Text)
-    # phone = db.Column(db.String(15))
+    pincode = db.Column(db.String(10))
+    address = db.Column(db.Text)
+    phone = db.Column(db.String(15))
     profile_docs = db.Column(db.String(255))  # For professionals only
-    # experience = db.Column(db.String(255))  # For professionals only
-    # rating = db.Column(db.Integer)  # For professionals only
+    experience = db.Column(db.String(255))  # For professionals only
+    rating = db.Column(db.Integer)  # For professionals only
     is_approved = db.Column(db.Boolean, default=False)  # For professionals
     is_blocked = db.Column(db.Boolean, default=False)  # To block a user
 

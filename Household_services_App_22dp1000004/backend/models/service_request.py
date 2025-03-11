@@ -11,7 +11,7 @@ class ServiceRequest(db.Model):
     service_status = db.Column(db.String(20), nullable=False)  # Requested/Assigned/Rejected/Closed
     action = db.Column(db.String(20))  # Accepted/Rejected
     remarks = db.Column(db.Text)
-    # rating = db.Column(db.Integer, nullable=True)
+    rating = db.Column(db.Integer, nullable=True)
 
     def __repr__(self):
         return f"<ServiceRequest {self.id} ({self.service_status})>"

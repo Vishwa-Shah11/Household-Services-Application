@@ -10,29 +10,7 @@ admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 @role_required('Admin')
 @jwt_required()
 def admin_dashboard():
-    claims = get_jwt()
-    if claims['role'] != 'Admin':
-        return jsonify({"msg": "Admins only!"}), 403
     return jsonify({"msg": "Welcome to the admin dashboard!"}), 200
-
-
-# Approve a Professional
-@admin_bp.route('/approve_user/<int:user_id>', methods=['PUT'])
-@role_required('Admin')
-@jwt_required()
-def approve_user(user_id):
-    claims = get_jwt()
-    if claims['role'] != 'Admin':
-        return jsonify({"msg": "Admins only!"}), 403
-
-    target_user = User.query.get_or_404(user_id)
-    if target_user.role != 'Professional':
-        return jsonify({"error": "Only professionals can be approved"}), 400
-
-    target_user.is_approved = True
-    db.session.commit()
-    return jsonify({"msg": f"User {target_user.username} has been approved."}), 200
-
 
 # Create a New Service
 @admin_bp.route('/create_service', methods=['POST'])
@@ -104,7 +82,7 @@ def get_services():
         'time_required': s.time_required
     } for s in services]
 
-    print("Fetched Services:", service_list)
+    # print("Fetched Services:", service_list)
     return jsonify({"services": service_list}), 200
 
 
@@ -124,25 +102,47 @@ def delete_service(service_id):
 @role_required('Admin')
 @jwt_required()
 def get_all_users():
-    claims = get_jwt()
-    if claims['role'] != 'admin':
-        return jsonify({"msg": "Admins only!"}), 403
-
-    all_users = User.query.all()
-    result = [
+    users = User.query.filter(User.role.in_(["Customer", "Professional"])).all()
+    # print("Users:", users)
+    
+    users_list = [
         {
-            'id': u.id,
-            'username': u.username,
-            'email': u.email,
-            'role': u.role,
-            'is_approved': u.is_approved,
-            'is_blocked': u.is_blocked
-        }
-        for u in all_users
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "role": user.role,
+            "profile_docs": user.profile_docs if user.profile_docs else "Not Uploaded",
+            "is_approved": user.is_approved if user.role == "Professional" else None,  # Show only for Professionals
+            "is_blocked": user.is_blocked
+        } 
+        for user in users
     ]
-    return jsonify(result), 200
+    print("Users List:", users_list)
+    return jsonify({"users": users_list}), 200
 
 
+# Approve a Professional
+@admin_bp.route('/approve/<int:user_id>', methods=['PUT'])
+@role_required('Admin')
+@jwt_required()
+def approve_user(user_id):
+    target_user = User.query.get_or_404(user_id)
+    if target_user and target_user.role == "Professional":
+        target_user.is_approved = True
+        db.session.commit()
+        return jsonify({"message": f"User {target_user.username} has been approved."}), 200
+    return jsonify({"error": "User not found or invalid role"}), 404
+
+@admin_bp.route("/reject/<int:user_id>", methods=["POST"])
+@role_required("Admin")
+@jwt_required()
+def reject_user(user_id):
+    target_user = User.query.get_or_404(user_id)
+    if target_user and target_user.role == "Professional":
+        target_user.is_approved = False
+        db.session.commit()
+        return jsonify({"message": f"User {target_user.username} has been approved."}), 200
+    return jsonify({"error": "User not found or invalid role"}), 404
 
 # Admin search for professionals
 @admin_bp.route('/search_professionals', methods=['GET'])

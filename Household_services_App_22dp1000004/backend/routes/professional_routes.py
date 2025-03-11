@@ -4,8 +4,68 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from datetime import datetime
 from utils import role_required
 from sqlalchemy.exc import SQLAlchemyError
+import os
+from werkzeug.utils import secure_filename # Securely save files to disk
+# from flask import current_app as app
+from flask import send_from_directory
 
 professional_bp = Blueprint('professional', __name__, url_prefix='/professional')
+
+UPLOAD_FOLDER = "uploads/"  # Define where files will be stored
+ALLOWED_EXTENSIONS = {"pdf", "doc", "docx", "jpg", "png"}  # Allowed formats
+
+# Ensure upload folder exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+# Function to check file extension
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@professional_bp.route("/uploads/<filename>")
+def serve_uploaded_file(filename):
+    return send_from_directory("uploads", filename)
+
+# Route for professionals to upload profile documents
+@professional_bp.route("/upload_docs", methods=["POST"])
+@role_required("Professional")
+@jwt_required()
+def upload_profile_docs():
+    user_id = get_jwt_identity()['id']  # Get the logged-in user ID
+    # print(f"Received user_id: {user_id}")
+    if not user_id:
+        return jsonify({"error": "User ID not found in JWT"}), 400
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    # print(request.files)
+
+    if "profile_docs" not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files["profile_docs"]
+
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
+    
+    # Validate file extension
+    if file.filename.split('.')[-1].lower() not in ALLOWED_EXTENSIONS:
+        return jsonify({"error": "Invalid file type"}), 400
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+        # file_path = os.path.join(app.config["UPLOAD_FOLDER"], f"{user.username}_{filename}")
+        file.save(file_path)
+
+        # Update database with file path
+        user.profile_docs = file_path
+        db.session.commit()
+
+        return jsonify({"message": "File uploaded successfully", "filename": filename}), 200
+
+    return jsonify({"error": "Invalid file type"}), 400
 
 @professional_bp.route('/dashboard', methods=['GET'])
 @role_required('Professional')

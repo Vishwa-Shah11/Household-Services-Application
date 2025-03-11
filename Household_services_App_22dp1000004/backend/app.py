@@ -9,6 +9,8 @@ from config import Config
 from models import db
 from flask_login import LoginManager
 from routes.auth import auth_bp
+# import os
+# from routes.professional_routes import UPLOAD_FOLDER
 
 def create_app():
     app = Flask(__name__)
@@ -31,6 +33,9 @@ def create_app():
     app.register_blueprint(customer_bp)
     app.register_blueprint(professional_bp)
     app.register_blueprint(service_bp, url_prefix='/service')
+
+    # if not os.path.exists(UPLOAD_FOLDER):
+    #     os.makedirs(UPLOAD_FOLDER)
 
     with app.app_context():
         db.init_app(app)

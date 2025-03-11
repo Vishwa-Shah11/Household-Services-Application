@@ -9,12 +9,14 @@ import ProfessionalDashboard from '../components/ProfessionalDashboard.vue';
 import ServiceRemarks from '@/components/ServiceRemarks.vue';
 import SearchService from '@/components/SearchService.vue';
 import ServiceDetails from '@/components/ServiceDetails.vue';
+import ManageUsers from '@/components/ManageUsers.vue';
 
 const routes = [
     { path: '/', redirect: '/login' },
     { path: '/login', component: Login },
     { path: '/register', component: Register },
     { path: '/admin/dashboard', component: AdminDashboard, meta: { requiresAuth: true } },
+    { path: '/admin/users', component: ManageUsers, meta: { requiresAuth: true, role: 'Admin' } },
     { path: '/customer/dashboard', component: CustomerDashboard, meta: { requiresAuth: true } },
     { path: '/category/:category', component: CategoryServices, meta: { requiresAuth: true } },
     { path: "/service-remarks/:requestId", component: ServiceRemarks },
