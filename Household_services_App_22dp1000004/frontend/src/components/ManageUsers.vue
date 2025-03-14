@@ -25,7 +25,7 @@
                         <td>{{ user.email }}</td>
                         <td>{{ user.role }}</td>
                         <td>
-                            <span v-if="user.role === 'Customer'" class="text-danger">
+                            <span v-if="user.role === 'Customer'" class="text-muted">
                                 Not required
                             </span>
                             <span v-if="user.role === 'Professional' && user.profile_docs === 'Not Uploaded'" class="text-danger">
@@ -37,14 +37,15 @@
                         </td>
                         <td>{{ user.is_approved !== null ? (user.is_approved ? 'Yes' : 'No') : 'N/A' }}</td>
                         <td>{{ user.is_blocked ? "Blocked" : "Active" }}</td>
+                        /if professional has not uploaded profile docs, admin can not perform approve/reject actions
                         <td v-if="user.role === 'Professional'">
                             <button class="btn btn-success btn-sm mx-1" @click="approveUser(user.id)"
-                                :disabled="!user.profile_docs || user.is_approved"
+                                :disabled="!user.profile_docs || user.is_approved || user.profile_docs === null"
                                 :title="!user.profile_docs ? 'Profile docs not uploaded' : ''">
                                 Approve
                             </button>
                             <button class="btn btn-danger btn-sm mx-1" @click="rejectUser(user.id)"
-                                :disabled="!user.profile_docs || user.is_approved === false"
+                                :disabled="!user.profile_docs || user.is_approved === false || user.profile_docs === null"
                                 :title="!user.profile_docs ? 'Profile docs not uploaded' : ''">
                                 Reject
                             </button>

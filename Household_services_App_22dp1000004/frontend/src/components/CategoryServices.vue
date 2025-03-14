@@ -9,23 +9,8 @@
             <p><strong>Price:</strong> {{ service.base_price }}</p>
             <p><strong>Time Required:</strong> {{ service.time_required }} minutes</p>
             <button @click="requestService(service.id)" class="btn btn-primary">Request Service</button>
+            <p>{{ service.id }}</p>
         </div>
-
-        <!-- <div v-if="showEditForm" class="card p-3 mt-4">
-            <h3>Edit Service Request</h3>
-            <label><strong>Request Date & Time:</strong></label>
-            <input type="datetime-local" v-model="selectedRequest.date_of_request" class="form-control mb-2" />
-            <label><strong>Service Status:</strong></label>
-            <select v-model="selectedRequest.service_status" class="form-control mb-2">
-                <option value="Requested">Requested</option>
-                <option value="Assigned">Assigned</option>
-                <option value="Closed">Closed</option>
-            </select>
-            <label><strong>Remarks:</strong></label>
-            <textarea v-model="selectedRequest.remarks" class="form-control mb-2"></textarea>
-            <button @click="updateServiceRequest" class="btn btn-success">Update</button>
-            <button @click="showEditForm = false" class="btn btn-secondary">Cancel</button>
-        </div> -->
     </div>
 </template>
 
@@ -67,15 +52,64 @@ export default {
                 this.services = [];
             }
         },
+        // async requestService(serviceId) {
+        //     try {
+        //         const token = localStorage.getItem('token');
+        //         const userName = await getUserName();
+        //         const response = await axios.post('http://127.0.0.1:5858/customer/service_request',
+        //             { service_id: serviceId, remarks: `${userName} requested this service` },
+        //             { headers: { Authorization: `Bearer ${token}` } }
+        //         );
+        //         alert(response.data.message);
+        //     } catch (error) {
+        //         console.error('Error requesting service:', error);
+        //         alert('Failed to request service. Please try again.');
+        //     }
+        // },
+
         async requestService(serviceId) {
             try {
                 const token = localStorage.getItem('token');
-                const userName = await getUserName();
-                const response = await axios.post('http://127.0.0.1:5858/customer/service_request',
-                    { service_id: serviceId, remarks: `${userName} requested this service` },
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-                alert(response.data.message);
+                // console.log("🔐 JWT Token:", token);
+                // Step 1: Fetch professionals who offer this service
+                const professionalsResponse = await axios.get(`http://127.0.0.1:5858/customer/professionals/${serviceId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (response.data.length === 0) {
+                    alert("No professionals available for this service.");
+                    return;
+                }
+
+                // Redirect customer to professional selection page
+                router.push({
+                    name: "SelectProfessional",
+                    query: { serviceId: serviceId },
+                });
+
+                // // Step 2: Ask the customer to choose a professional
+                // let professionalOptions = professionalsResponse.data.map(prof => `${prof.id}: ${prof.name}`).join('\n');
+                // let selectedProfId = prompt(`Select a professional by entering their ID:\n${professionalOptions}`);
+
+                // if (!selectedProfId) {
+                //     alert("You must select a professional to proceed.");
+                //     return;
+                // }
+
+                // const userName = await getUserName(); // Get name from utility function
+                // console.log("👤 User Name:", userName);
+
+                // const response = await axios.post('http://127.0.0.1:5858/customer/service_request',
+                //     {
+                //         service_id: serviceId,
+                //         professional_id: parseInt(selectedProfId),
+                //         remarks: `${userName} requested this service`
+                //     },
+                //     { headers: { Authorization: `Bearer ${token}` } }
+                // );
+                // console.log(serviceId),
+                //     console.log(response.data.message);
+                alert(response.data.message); // Show success message
             } catch (error) {
                 console.error('Error requesting service:', error);
                 alert('Failed to request service. Please try again.');
@@ -94,25 +128,6 @@ export default {
                 console.error("❌ Error fetching service requests:", error);
             }
         },
-        // editServiceRequest(request) {
-        //     this.selectedRequest = { ...request };
-        //     this.showEditForm = true;
-        // },
-        // async updateServiceRequest() {
-        //     try {
-        //         const token = localStorage.getItem('token');
-        //         const response = await axios.put(`http://127.0.0.1:5858/customer/update_request/${this.selectedRequest.id}`,
-        //             this.selectedRequest,
-        //             { headers: { Authorization: `Bearer ${token}` } }
-        //         );
-        //         alert(response.data.message);
-        //         this.fetchServiceRequests();
-        //         this.showEditForm = false;
-        //     } catch (error) {
-        //         console.error('Error updating service request:', error);
-        //         alert('Failed to update request. Please try again.');
-        //     }
-        // },
     },
     mounted() {
         this.fetchServices();

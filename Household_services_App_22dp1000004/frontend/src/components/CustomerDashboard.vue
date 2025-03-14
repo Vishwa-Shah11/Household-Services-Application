@@ -98,7 +98,6 @@ export default {
       selectedRequest: null, // Store selected request for editing
       showEditForm: false, // Controls form visibility
       categories: [],
-      // categories: ['Saloon & Spa', 'Cleaning', 'Plumbing', 'Electrical', 'Carpentry', 'Appliance Repair', 'Pest Control', 'Others']
     };
   },
   methods: {
@@ -128,22 +127,48 @@ export default {
         console.error('Error fetching services:', error);
       }
     },
-    async requestService(serviceId) {
-      try {
-        const token = localStorage.getItem('token');
-        const userName = await getUserName(); // Get name from utility function
+    // async requestService(serviceId) {
+    //   try {
+    //     const token = localStorage.getItem('token');
+    //     console.log("🔐 JWT Token:", token);
+    //     // Step 1: Fetch professionals who offer this service
+    //     const professionalsResponse = await axios.get(`http://127.0.0.1:5858/customer/professionals/${serviceId}`, {
+    //       headers: { Authorization: `Bearer ${token}` }
+    //     });
 
-        const response = await axios.post('http://127.0.0.1:5858/customer/service_request',
-          { service_id: serviceId, remarks: `${userName} requested this service` },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        console.log(response.data.message);
-        alert(response.data.message); // Show success message
-      } catch (error) {
-        console.error('Error requesting service:', error);
-        alert('Failed to request service. Please try again.');
-      }
-    },
+    //     if (!professionalsResponse.data.length) {
+    //       alert("No professionals available for this service.");
+    //       return;
+    //     }
+
+    //     // Step 2: Ask the customer to choose a professional
+    //     let professionalOptions = professionalsResponse.data.map(prof => `${prof.id}: ${prof.name}`).join('\n');
+    //     let selectedProfId = prompt(`Select a professional by entering their ID:\n${professionalOptions}`);
+
+    //     if (!selectedProfId) {
+    //         alert("You must select a professional to proceed.");
+    //         return;
+    //     }
+
+    //     const userName = await getUserName(); // Get name from utility function
+    //     console.log("👤 User Name:", userName);
+
+    //     const response = await axios.post('http://127.0.0.1:5858/customer/service_request',
+    //       { 
+    //         service_id: serviceId,
+    //         professional_id: parseInt(selectedProfId),
+    //         remarks: `${userName} requested this service`
+    //       },
+    //       { headers: { Authorization: `Bearer ${token}` } }
+    //     );
+    //     console.log(serviceId),
+    //     console.log(response.data.message);
+    //     alert(response.data.message); // Show success message
+    //   } catch (error) {
+    //     console.error('Error requesting service:', error);
+    //     alert('Failed to request service. Please try again.');
+    //   }
+    // },
 
     async fetchServiceRequests() {
       try {

@@ -1,11 +1,10 @@
 from flask import Blueprint, request, jsonify
-from models import db, Service, ServiceRequest
+from models import db, Service, ServiceRequest, User
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 from utils import role_required, get_customer_id_from_token
 
 customer_bp = Blueprint('Customer', __name__, url_prefix='/customer')
-# print(customer_bp)
 
 @customer_bp.route('/dashboard', methods=['GET'])
 @role_required('Customer')
@@ -72,10 +71,16 @@ def create_service_request():
     service = Service.query.get(data.get('service_id'))
     if not service:
         return jsonify({'error': 'Service not found'}), 404
+    
+    # Check if the professional exists and is approved
+    professional = User.query.filter_by(id=data.get('professional_id'), role='Professional', is_approved=True).first()
+    if not professional:
+        return jsonify({'error': 'Selected professional is not available'}), 404
 
     new_request = ServiceRequest(
         service_id=service.id,
         customer_id=customer_id,
+        professional_id=professional.id,
         date_of_request=datetime.utcnow(),
         service_status='Requested',
         remarks=data.get('remarks', '')  # Default empty remarks if not provided
@@ -231,3 +236,46 @@ def close_service_request(request_id):
 
     db.session.commit()
     return jsonify({'message': 'Service request closed successfully'}), 200
+
+# Get professionals for a specific service
+@customer_bp.route('/professionals/<int:service_id>', methods=['GET'])
+@role_required('Customer')
+@jwt_required()
+def get_professionals_for_service(service_id):
+    # Ensure the service exists
+    service = Service.query.get(service_id)
+    if not service:
+        return jsonify({"error": "Service not found"}), 404
+    # Find professionals who offer the selected service
+    # professionals = User.query.filter_by(role='Professional', is_approved=True).join(
+    #     ServiceRequest, ServiceRequest.professional_id == User.id
+    # ).filter(ServiceRequest.service_id == service_id).all()
+    # professionals = User.query.filter_by(role='Professional', is_approved=True).join(
+    #     ServiceRequest, ServiceRequest.service_id == service_id
+    # )
+    # Fetch professionals who provide this service
+    professionals = (
+        User.query
+        .filter_by(role="Professional", is_approved=True)
+        .join(ServiceRequest, ServiceRequest.service_id == service_id)
+        # .filter(ServiceRequest.service_id == service_id)
+        .order_by(User.rating.desc())  # Sort only by rating
+        .all()
+    )
+    print("Professionals : ", professionals)
+
+    if not professionals:
+        return jsonify({'error': 'No professionals available for this service'}), 404
+
+    # Return professionals as a list
+    professional_list = [
+        {
+            "id": prof.id,
+            "username": prof.username,
+            "rating": getattr(prof, "rating", 0),
+            "base_price": service.base_price
+        }
+        for prof in professionals
+    ]
+
+    return jsonify(professional_list), 200
