@@ -17,6 +17,7 @@
 <script>
 import axios from 'axios';
 import { getUserName } from '@/router/utils.js';
+import router from '@/router/index.js';
 
 export default {
     data() {
@@ -72,18 +73,25 @@ export default {
                 const token = localStorage.getItem('token');
                 // console.log("🔐 JWT Token:", token);
                 // Step 1: Fetch professionals who offer this service
-                const professionalsResponse = await axios.get(`http://127.0.0.1:5858/customer/professionals/${serviceId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const professionalsResponse = await axios.get(`http://127.0.0.1:5858/customer/professionals/${serviceId}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                console.log("professionalsResponse", professionalsResponse.data)
 
-                if (response.data.length === 0) {
+                if (professionalsResponse.data.length === 0) {
                     alert("No professionals available for this service.");
                     return;
                 }
+                if (!serviceId) {
+                    console.error("🚨 serviceId is undefined or null!");
+                    alert("Service ID is missing. Please try again.");
+                    return;
+                }
+                console.log("🔄 Navigating to selectProfessional with serviceId:", serviceId);
 
                 // Redirect customer to professional selection page
-                router.push({
-                    name: "SelectProfessional",
+                this.$router.push({
+                    name: "selectProfessional",
                     query: { serviceId: serviceId },
                 });
 
@@ -109,7 +117,8 @@ export default {
                 // );
                 // console.log(serviceId),
                 //     console.log(response.data.message);
-                alert(response.data.message); // Show success message
+                // console.log(professionalsResponse.data.message)
+                // alert(professionalsResponse.data.message); // Show success message
             } catch (error) {
                 console.error('Error requesting service:', error);
                 alert('Failed to request service. Please try again.');

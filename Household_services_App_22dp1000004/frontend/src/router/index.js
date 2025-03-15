@@ -10,6 +10,7 @@ import ServiceRemarks from '@/components/ServiceRemarks.vue';
 import SearchService from '@/components/SearchService.vue';
 import ServiceDetails from '@/components/ServiceDetails.vue';
 import ManageUsers from '@/components/ManageUsers.vue';
+//import SelectProfessional from '@/components/SelectProfessional.vue';
 
 const routes = [
     { path: '/', redirect: '/login' },
@@ -19,6 +20,12 @@ const routes = [
     { path: '/admin/users', component: ManageUsers, meta: { requiresAuth: true, role: 'Admin' } },
     { path: '/customer/dashboard', component: CustomerDashboard, meta: { requiresAuth: true } },
     { path: '/category/:category', component: CategoryServices, meta: { requiresAuth: true } },
+    //{ path: '/select-professional/:serviceId', component: SelectProfessional, meta: { requiresAuth: true } },
+    {
+      path: "/select-professional",
+      name: "selectProfessional", // ✅ Ensure lowercase if you're using it in push()
+      component: () => import("@/components/SelectProfessional.vue")
+  },
     { path: "/service-remarks/:requestId", component: ServiceRemarks },
     { path: "/service/search", component: SearchService },
     { path: '/service/:id', component: ServiceDetails },

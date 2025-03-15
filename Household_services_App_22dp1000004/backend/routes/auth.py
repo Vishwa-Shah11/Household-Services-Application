@@ -166,6 +166,7 @@ def register():
             "pincode": pincode,
             "address": address,
             "phone": phone,
+            "category": category if role == "Professional" else None,
             "experience": experience if role == "Professional" else None,
             "profile_docs": file_path if role == "Professional" else None,
         })
@@ -179,6 +180,7 @@ def register():
             pincode=pincode,
             address=address,
             phone=phone,
+            category=category if role == "Professional" else None,
             experience=experience if role == "Professional" else None,
             profile_docs=file_path if role == "Professional" else None,
         )

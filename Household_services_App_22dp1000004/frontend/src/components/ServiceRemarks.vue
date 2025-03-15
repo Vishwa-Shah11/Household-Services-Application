@@ -3,12 +3,12 @@
     <h2 class="text-primary">Service Remarks</h2>
     <p>Request ID: <strong>{{ requestId }}</strong></p>
 
-    <div class="form-group">
+    <!-- <div class="form-group">
       <label>Service Name:</label>
       <input type="text" class="form-control" v-model="serviceDetails.name" disabled />
-    </div>
+    </div> -->
 
-    <div class="form-group">
+    <!-- <div class="form-group">
       <label>Description:</label>
       <input type="text" class="form-control" v-model="serviceDetails.description" disabled />
     </div>
@@ -21,14 +21,25 @@
     <div class="form-group">
       <label>Contact No:</label>
       <input type="text" class="form-control" v-model="serviceDetails.contact" disabled />
-    </div>
+    </div> -->
 
-    <!-- Rating -->
+    <!-- Service Rating -->
     <div class="form-group">
       <label>Service Rating:</label>
       <div>
-        <span v-for="star in 5" :key="star" @click="setRating(star)" class="star">
-          {{ star <= rating ? '⭐' : '☆' }} </span>
+        <span v-for="star in 5" :key="'service-' + star" @click="setServiceRating(star)" class="star">
+          {{ star <= serviceRating ? '⭐' : '☆' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Professional Rating -->
+    <div class="form-group">
+      <label>Professional Rating:</label>
+      <div>
+        <span v-for="star in 5" :key="'professional-' + star" @click="setProfessionalRating(star)" class="star">
+          {{ star <= professionalRating ? '⭐' : '☆' }}
+        </span>
       </div>
     </div>
 
@@ -52,7 +63,8 @@ export default {
     return {
       requestId: this.$route.params.requestId, // Get request ID from route
       serviceDetails: {},
-      rating: 0,
+      serviceRating: 0,
+      professionalRating: 0,
       remarks: "",
     };
   },
@@ -63,13 +75,17 @@ export default {
     async fetchServiceDetails() {
       try {
         const response = await axios.get(`http://127.0.0.1:5858/customer/service_request/${this.requestId}`);
+        console.log("response", response.data)
         this.serviceDetails = response.data;
       } catch (error) {
         console.error("Error fetching service details:", error);
       }
     },
-    setRating(value) {
-      this.rating = value;
+    setServiceRating(value) {
+      this.serviceRating = value;
+    },
+    setProfessionalRating(value) {
+      this.professionalRating = value;
     },
     async submitRemarks() {
       const token = localStorage.getItem("token");
@@ -77,14 +93,16 @@ export default {
         alert("You are not authenticated! Please log in again.");
         return;
       }
-      if (this.rating === 0) {
-        alert("Please provide a rating before submitting.");
+      if (this.serviceRating === 0 || this.professionalRating === 0) {
+        alert("Please provide both Service and Professional ratings before submitting.");
         return;
       }
       try {
-        const response = await axios.put(`http://127.0.0.1:5858/customer/fetch_requests/${this.requestId}/close`,
+        const response = await axios.put(
+          `http://127.0.0.1:5858/customer/fetch_requests/${this.requestId}/close`,
           {
-            rating: this.rating,
+            service_rating: this.serviceRating,
+            professional_rating: this.professionalRating,
             remarks: this.remarks,
           },
           {

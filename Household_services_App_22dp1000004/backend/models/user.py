@@ -17,6 +17,7 @@ class User(db.Model, UserMixin):
     rating = db.Column(db.Integer)  # For professionals only
     is_approved = db.Column(db.Boolean, default=False)  # For professionals
     is_blocked = db.Column(db.Boolean, default=False)  # To block a user
+    category = db.Column(db.String(50))  # For professionals only
 
     def __repr__(self):
         return f"<User {self.username} ({self.role})>"

@@ -3,6 +3,8 @@ from models import db, Service, ServiceRequest, User
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 from utils import role_required, get_customer_id_from_token
+from models.service import ServiceCategory
+from sqlalchemy.sql import func
 
 customer_bp = Blueprint('Customer', __name__, url_prefix='/customer')
 
@@ -22,11 +24,13 @@ def customer_dashboard():
 @customer_bp.route('/categories', methods=['GET'])
 @jwt_required()
 def get_categories():
-    categories = db.session.query(Service.category).distinct().all()
-    # print("Categories : ", categories)
+    # categories = db.session.query(Service.category).distinct().all()
+    categories = [category.value for category in ServiceCategory]
+   
+    print("Categories : ", categories)
     # print(type(categories),type(categories[0]),type(categories[0][0]))
     # print(type(str(categories[0])))
-    return jsonify([str(category[0]) for category in categories]), 200
+    return jsonify([str(category) for category in categories]), 200
 
 @customer_bp.route('/services/<category>', methods=['GET'])
 @jwt_required()
@@ -99,21 +103,28 @@ def fetch_requests():
         return jsonify({"error": "Unauthorized"}), 401
 
     token = token.replace("Bearer ", "")  # Remove "Bearer " prefix
-    customer_id = get_customer_id_from_token(token)
+    customer_id_input = get_customer_id_from_token(token)
 
-    if not customer_id:
+    if not customer_id_input:
         print("❌ Invalid or expired token")
         return jsonify({"error": "Invalid or expired token"}), 401   
 
     try:
-        service_requests = ServiceRequest.query.filter_by(customer_id=customer_id).all()
+        service_requests = ServiceRequest.query.filter_by(customer_id=customer_id_input).all()
+        # service_requests = Service.query.filter_by(category=customer_id_input).all()
+        print("service_requests : ", service_requests)
+        # print(service_requests[0].id,service_requests[0].service_id,service_requests[0].customer_id,"my name is heet shah ")
         if not service_requests:
-            print("ℹ️ No service requests found for customer_id:", customer_id)
+            print("ℹ️ No service requests found for customer_id:", customer_id_input)
             return jsonify({"service_requests": []}), 200  # Empty response instead of None
         
         response_data = []
+        # print(response_data,"vishwa shah")
         for req in service_requests:
+            # print("hello sir ",req.service_id)  
+
             service = Service.query.get(req.service_id)
+            # print("service : ", service,"narendra modi")
             if not service:
                 print(f"⚠️ Service not found for service_id: {req.service_id}")
                 continue
@@ -214,30 +225,50 @@ def edit_service_request(request_id):
 @role_required('Customer')
 @jwt_required()
 def close_service_request(request_id):
-    customer_id = get_jwt_identity()['id']
-    service_request = ServiceRequest.query.filter_by(id=request_id, customer_id=customer_id).first()
+    try:
+        customer_id = get_jwt_identity()['id']
+        # Get rating & remarks from frontend
+        data = request.get_json()
+        service_rating = data.get("service_rating")
+        professional_rating = data.get("professional_rating")
+        remarks = data.get("remarks", "")
 
-    if not service_request:
-        return jsonify({'error': 'Service request not found'}), 404
+        if not service_rating or not (1 <= service_rating <= 5):
+            return jsonify({'error': 'Invalid Service rating. Must be between 1 to 5.'}), 400
+        if not professional_rating or not (1 <= professional_rating <= 5):
+            return jsonify({'error': 'Invalid Professional rating. Must be between 1 to 5.'}), 400
 
-    # Get rating & remarks from frontend
-    data = request.get_json()
-    rating = data.get('rating', None)
-    remarks = data.get('remarks', '')
+        # Fetch service request
+        service_request = ServiceRequest.query.filter_by(id=request_id, customer_id=customer_id).first()
+        if not service_request:
+            return jsonify({'error': 'Service request not found'}), 404
+        
+        # Fetch the professional user
+        professional = User.query.get(service_request.professional_id)
+        if not professional:
+            return jsonify({"error": "Assigned professional not found"}), 404
+        
+        # update service details
+        service_request.service_status = 'Closed'
+        service_request.date_of_completion = datetime.utcnow()
+        service_request.remarks = remarks  # Store remarks
+        service_request.rating = service_rating  # Store rating (Ensure the model has this column)
 
-    if not rating or not (1 <= rating <= 5):
-        return jsonify({'error': 'Invalid rating. Must be between 1 to 5.'}), 400
+        # Update professional rating (average of all ratings received)
+        if professional.rating is None:
+            professional.rating = professional_rating
+        else:
+            existing_requests = ServiceRequest.query.filter_by(professional_id=professional.id).count()
+            professional.rating = ((professional.rating * (existing_requests - 1)) + professional_rating) / existing_requests
 
-    # Update service request
-    service_request.service_status = 'Closed'
-    service_request.date_of_completion = datetime.utcnow()
-    service_request.remarks = remarks  # Store remarks
-    service_request.rating = rating  # Store rating (Ensure the model has this column)
+        db.session.commit()
+        return jsonify({'message': 'Service request closed successfully'}), 200
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
-    db.session.commit()
-    return jsonify({'message': 'Service request closed successfully'}), 200
-
-# Get professionals for a specific service
+# Get professionals for a specific category
 @customer_bp.route('/professionals/<int:service_id>', methods=['GET'])
 @role_required('Customer')
 @jwt_required()
@@ -246,36 +277,82 @@ def get_professionals_for_service(service_id):
     service = Service.query.get(service_id)
     if not service:
         return jsonify({"error": "Service not found"}), 404
-    # Find professionals who offer the selected service
-    # professionals = User.query.filter_by(role='Professional', is_approved=True).join(
-    #     ServiceRequest, ServiceRequest.professional_id == User.id
-    # ).filter(ServiceRequest.service_id == service_id).all()
-    # professionals = User.query.filter_by(role='Professional', is_approved=True).join(
-    #     ServiceRequest, ServiceRequest.service_id == service_id
-    # )
     # Fetch professionals who provide this service
+    # professionals = (
+    #     User.query
+    #     .filter_by(role="Professional", is_approved=True, category=service.category)
+    #     .join(ServiceRequest, ServiceRequest.service_id == service_id)
+    #     # .filter(ServiceRequest.service_id == service_id)
+    #     .order_by(User.rating.desc())  # Sort only by rating
+    #     .all()
+    # )
     professionals = (
-        User.query
-        .filter_by(role="Professional", is_approved=True)
-        .join(ServiceRequest, ServiceRequest.service_id == service_id)
-        # .filter(ServiceRequest.service_id == service_id)
-        .order_by(User.rating.desc())  # Sort only by rating
+        db.session.query(User, func.count(ServiceRequest.id).label("review_count"))
+        .join(ServiceRequest, ServiceRequest.professional_id == User.id, isouter=True)
+        .filter(
+            User.role == "Professional",
+            User.is_approved == True,
+            User.category == service.category,
+            ServiceRequest.service_id == service_id
+        )
+        .group_by(User.id)
+        .order_by(User.rating.desc(), func.count(ServiceRequest.id).desc())
         .all()
     )
     print("Professionals : ", professionals)
-
     if not professionals:
         return jsonify({'error': 'No professionals available for this service'}), 404
-
     # Return professionals as a list
     professional_list = [
         {
             "id": prof.id,
             "username": prof.username,
             "rating": getattr(prof, "rating", 0),
+            "review_count": review_count,
             "base_price": service.base_price
         }
-        for prof in professionals
+        for prof, review_count  in professionals
     ]
-
     return jsonify(professional_list), 200
+
+@customer_bp.route('/select-professional/<int:service_id>', methods=['POST'])
+@role_required('Customer')
+@jwt_required()
+def select_professional(service_id):
+    data = request.json
+    print("Select Professional Data:", data)
+
+    customer_id = get_jwt_identity()['id']
+
+    # Fetch the service and its category
+    service = Service.query.get(service_id)
+    if not service:
+        return jsonify({'error': 'Service not found'}), 404
+
+    service_category = service.category  # Get the category of the selected service
+
+    # Check if the professional exists and is approved
+    professional = User.query.filter_by(
+        id=data.get('professional_id'), 
+        role='Professional', 
+        is_approved=True,
+        category=service_category
+    ).first()
+    
+    if not professional:
+        return jsonify({'error': 'No professionals available for this category'}), 404
+
+    # ✅ Create a new service request (instead of using request_id)
+    new_service_request = ServiceRequest(
+        service_id=service_id,
+        customer_id=customer_id,
+        professional_id=professional.id,
+        date_of_request=datetime.utcnow(),
+        service_status='Assigned',
+        remarks=data.get('remarks', 'Customer requested this service')
+    )
+    db.session.add(new_service_request)
+    db.session.commit()
+
+    # return jsonify({'message': 'Professional selected successfully'}), 200
+    return jsonify({'message': 'Service Request created successfully'})

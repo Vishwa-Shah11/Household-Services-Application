@@ -37,7 +37,7 @@
                         </td>
                         <td>{{ user.is_approved !== null ? (user.is_approved ? 'Yes' : 'No') : 'N/A' }}</td>
                         <td>{{ user.is_blocked ? "Blocked" : "Active" }}</td>
-                        /if professional has not uploaded profile docs, admin can not perform approve/reject actions
+                        <!-- /if professional has not uploaded profile docs, admin can not perform approve/reject actions -->
                         <td v-if="user.role === 'Professional'">
                             <button class="btn btn-success btn-sm mx-1" @click="approveUser(user.id)"
                                 :disabled="!user.profile_docs || user.is_approved || user.profile_docs === null"

@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <button @click="toggleServiceRequests" class="btn btn-primary">
+    <button @click="toggleServiceRequests" class="btn btn-success mt-4">
       {{ showServiceRequests ? "Hide" : "Your Service Requests" }}
     </button>
 
