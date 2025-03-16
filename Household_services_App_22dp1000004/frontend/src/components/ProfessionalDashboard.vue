@@ -91,11 +91,15 @@ export default {
         const response = await fetch("http://127.0.0.1:5858/professional/service_requests", {
           headers: { Authorization: `Bearer ${token}` },
         });
-
         const result = await response.json();
         if (response.ok) {
-          this.serviceRequests = result;
-        } else {
+          this.serviceRequests = result.service_requests || [];
+        } else if (response.status === 403) {
+          this.serviceRequests = [];
+          alert("Access denied. Your account is not approved yet.");
+        }
+        else {
+          this.serviceRequests = [];
           alert(result.message || "Failed to fetch requests");
         }
       } catch (error) {

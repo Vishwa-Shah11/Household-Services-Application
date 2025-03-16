@@ -341,6 +341,8 @@ def select_professional(service_id):
     
     if not professional:
         return jsonify({'error': 'No professionals available for this category'}), 404
+    
+    user = User.query.get_or_404(id)
 
     # ✅ Create a new service request (instead of using request_id)
     new_service_request = ServiceRequest(
@@ -349,7 +351,7 @@ def select_professional(service_id):
         professional_id=professional.id,
         date_of_request=datetime.utcnow(),
         service_status='Assigned',
-        remarks=data.get('remarks', 'Customer requested this service')
+        remarks=data.get('remarks', '${user.username} requested this service')
     )
     db.session.add(new_service_request)
     db.session.commit()

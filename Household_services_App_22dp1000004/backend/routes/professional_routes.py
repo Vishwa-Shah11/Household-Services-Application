@@ -81,17 +81,27 @@ def professional_dashboard():
 @jwt_required()
 def view_all_service_requests():
     professional_id = get_jwt_identity()['id']
-    service_requests = ServiceRequest.query.filter_by(professional_id=professional_id).all()
+     # Fetch the professional's details
+    professional = User.query.filter_by(id=professional_id, role="Professional").first()
+    # Check if the professional is approved
+    if not professional or not professional.is_approved:
+        return jsonify({'message': 'Access denied. Your account is not approved yet.'}), 403
+    # Fetch all service requests that are either assigned to the professional or still open
+    service_requests = ServiceRequest.query.filter(
+        (ServiceRequest.professional_id == professional_id) | 
+        (ServiceRequest.professional_id == None)  # Show unassigned requests too
+    ).all()
+    # service_requests = ServiceRequest.query.filter_by(professional_id=professional_id).all()
 
     if not service_requests:
-        return jsonify({'message': 'No service requests assigned yet'}), 404
+        return jsonify({'message': 'No service requests available'}), 404
     
     results = [{
             'id': req.id,
             'service_id': req.service_id,
             'customer_id': req.customer_id,
             'date_of_request': req.date_of_request.strftime('%d-%m-%Y %I:%M %p'),
-            'date_of_completion': req.date_of_completion.strftime('%d-%m-%Y %I:%M %p'),
+            # 'date_of_completion': req.date_of_completion.strftime('%d-%m-%Y %I:%M %p'),
             'service_status': req.service_status,
             'remarks': req.remarks
         } for req in service_requests
