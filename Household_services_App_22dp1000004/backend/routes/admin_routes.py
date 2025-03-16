@@ -184,6 +184,16 @@ def search_professionals():
     except Exception as e:
         print(f"Error in search_professionals function: {str(e)}")
         return jsonify({'error': 'Internal Server Error'}), 500
+    
+@admin_bp.route('/block/<int:user_id>', methods=['POST'])
+@role_required('Admin')
+@jwt_required()
+def toggle_block(user_id):
+    target_user = User.query.get_or_404(user_id)
+    target_user.is_blocked = not target_user.is_blocked  # Toggle block status
+    db.session.commit()
+    status = "blocked" if target_user.is_blocked else "unblocked"
+    return jsonify({"message": f"User {target_user.username} has been {status}."}), 200
 
 
 # Flag (Block) a User

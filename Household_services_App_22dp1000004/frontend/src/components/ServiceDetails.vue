@@ -3,7 +3,7 @@
         <h2>{{ service.name }}</h2>
         <p>{{ service.description }}</p>
         <p>Price: {{ service.base_price }}</p>
-        <router-link to="/">Back to Search</router-link>
+        <router-link to="/service/search">Back to Search</router-link>
     </div>
 
     <div v-else-if="message" class="mt-4 alert alert-warning">

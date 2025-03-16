@@ -6,7 +6,7 @@
       <div class="navbar-nav">
         <router-link class="nav-link" to="/admin/dashboard" v-if="isAuthenticated && isAdmin">Dashboard</router-link>
         <router-link class="nav-link" to="/customer/dashboard" v-if="isAuthenticated && isCustomer">Dashboard</router-link>
-        <router-link class="nav-link" to="/proffesional/dashboard" v-if="isAuthenticated && isProffesional">Dashboard</router-link>
+        <router-link class="nav-link" to="/professional/dashboard" v-if="isAuthenticated && isProfessional">Dashboard</router-link>
         <!-- <router-link class="nav-link" to="/service/search" v-if="isAuthenticated">Search</router-link> -->
         <router-link class="nav-link" to="/service/search" v-if="isAuthenticated && isCustomer">Search</router-link>
         <router-link class="nav-link" to="/admin/search-professionals" v-if="isAuthenticated && isAdmin">Search</router-link>
@@ -38,8 +38,8 @@ export default {
     isCustomer() {
       return this.userRole === "Customer"; // ✅ Check if the user is a Customer
     },
-    isProffesional() {
-      return this.userRole === "Proffesional"; // ✅ Check if the user is a Proffesional
+    isProfessional() {
+      return this.userRole === "Professional"; // ✅ Check if the user is a Professional
     }
   },
   methods: {
