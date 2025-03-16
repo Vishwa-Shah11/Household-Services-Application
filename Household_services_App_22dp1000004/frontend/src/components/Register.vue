@@ -60,12 +60,9 @@
 
       <!-- Register Button -->
       <div class="text-center">
-        <p> hello heet </p>
         <!-- <button @click="() => console.log('Register button clicked!')" class="btn btn-primary w-100">Register</button> -->
         <button @click="registerUser" class="btn btn-primary w-100">Register</button>
-
         <!-- <button @click="registerUser" class="btn btn-primary w-100">Register</button> -->
-        <p> hello heet </p>
       </div>
     </div>
   </div>

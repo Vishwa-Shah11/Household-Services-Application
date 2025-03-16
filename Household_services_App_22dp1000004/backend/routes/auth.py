@@ -93,7 +93,7 @@ def get_categories():
     # categories = db.session.query(Service.category).distinct().all()
     # categories_list = [category[0].value for category in categories] 
     categories_list = [category.value for category in ServiceCategory]
-    print(categories_list,"hi vishwa shah ")
+    # print(categories_list,"hi vishwa shah ")
     return jsonify({"categories": categories_list}), 200
 
 @auth_bp.route("/register", methods=["POST"])
@@ -148,7 +148,6 @@ def register():
             return jsonify({"error": "Missing required fields"}), 400
         
         if role == "Professional":
-            print("hii heet shah")
             # catogaries=Service.query.all()
             if not category:
                 return jsonify({"error": "Professionals must select a category"}), 400

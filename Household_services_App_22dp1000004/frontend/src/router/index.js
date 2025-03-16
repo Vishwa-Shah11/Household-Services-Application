@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-//import HomeView from '../views/HomeView.vue';
+import HomeView from '../views/HomeView.vue';
 import Login from '../components/Login.vue';
 import Register from '../components/Register.vue';
 import AdminDashboard from '../components/AdminDashboard.vue';
@@ -14,7 +14,8 @@ import ManageUsers from '@/components/ManageUsers.vue';
 import SearchProfessionals from '../components/SearchProfessionals.vue';
 
 const routes = [
-    { path: '/', redirect: '/login' },
+    { path: '/', redirect: '/home' },
+    { path: '/home', component: HomeView },
     { path: '/login', component: Login },
     { path: '/register', component: Register },
     { path: '/admin/dashboard', component: AdminDashboard, meta: { requiresAuth: true } },

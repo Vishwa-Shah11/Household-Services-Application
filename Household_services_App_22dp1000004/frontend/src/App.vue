@@ -1,8 +1,8 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
-      <!-- <router-link class="navbar-brand" to="/home" v-if="isAuthenticated">Home</router-link> -->
-      <router-link class="navbar-brand" to="/home">Home</router-link>
+      <router-link class="navbar-brand" to="/home" v-if="isAuthenticated">Home</router-link>
+      <!-- <router-link class="navbar-brand" to="/home">Home</router-link> -->
       <div class="navbar-nav">
         <router-link class="nav-link" to="/admin/dashboard" v-if="isAuthenticated && isAdmin">Dashboard</router-link>
         <router-link class="nav-link" to="/customer/dashboard" v-if="isAuthenticated && isCustomer">Dashboard</router-link>

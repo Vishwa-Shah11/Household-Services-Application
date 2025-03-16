@@ -45,7 +45,7 @@ def create_app():
     @app.route('/')
     @app.route('/home')
     def home():
-        return "Hello, Vishwa!"
+        return "Hello!"
 
     return app
     
