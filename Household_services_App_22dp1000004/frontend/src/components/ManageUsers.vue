@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <h2 class="text-center my-4">All Users</h2>
+        <h2 class="text-center my-4">Users</h2>
 
         <p v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</p>
 
@@ -12,6 +12,7 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Role</th>
+                        <th>Rating</th>
                         <th>Profile Docs</th>
                         <th>Approved</th>
                         <th>Blocked</th>
@@ -25,29 +26,44 @@
                         <td>{{ user.email }}</td>
                         <td>{{ user.role }}</td>
                         <td>
+                            <span v-if="typeof user.rating === 'number'">{{ user.rating.toFixed(1) }} ⭐</span>
+                            <span v-else class="text-muted">N/A</span>
+                        </td>
+                        <td>
                             <span v-if="user.role === 'Customer'" class="text-muted">
                                 Not required
                             </span>
-                            <span v-if="user.role === 'Professional' && user.profile_docs === 'Not Uploaded'" class="text-danger">
+                            <span v-if="user.role === 'Professional' && user.profile_docs === 'Not Uploaded'"
+                                class="text-danger">
                                 Not Uploaded
                             </span>
-                            <a v-else-if="user.role === 'Professional'" :href="'http://127.0.0.1:5858/professional/' + user.profile_docs" target="_blank">
+                            <a v-else-if="user.role === 'Professional'"
+                                :href="'http://127.0.0.1:5858/professional/' + user.profile_docs" target="_blank">
                                 View Document
                             </a>
                         </td>
                         <td>{{ user.is_approved !== null ? (user.is_approved ? 'Yes' : 'No') : 'N/A' }}</td>
-                        <td>{{ user.is_blocked ? "Blocked" : "Active" }}</td>
-                        <!-- /if professional has not uploaded profile docs, admin can not perform approve/reject actions -->
-                        <td v-if="user.role === 'Professional'">
-                            <button class="btn btn-success btn-sm mx-1" @click="approveUser(user.id)"
-                                :disabled="!user.profile_docs || user.is_approved || user.profile_docs === null"
-                                :title="!user.profile_docs ? 'Profile docs not uploaded' : ''">
-                                Approve
-                            </button>
-                            <button class="btn btn-danger btn-sm mx-1" @click="rejectUser(user.id)"
-                                :disabled="!user.profile_docs || user.is_approved === false || user.profile_docs === null"
-                                :title="!user.profile_docs ? 'Profile docs not uploaded' : ''">
-                                Reject
+                        <td>{{ user.is_blocked ? "Blocked"  : "Active" }}</td>
+                        <td>
+                            <!-- Approve / Reject for Professionals -->
+                            <div v-if="user.role === 'Professional'" class="d-inline-block">
+                                <button class="btn btn-success btn-sm mx-1" @click="approveUser(user.id)"
+                                    :disabled="!user.profile_docs || user.is_approved || user.profile_docs === null"
+                                    :title="!user.profile_docs ? 'Profile docs not uploaded' : ''">
+                                    Approve
+                                </button>
+                                <button class="btn btn-danger btn-sm mx-1" @click="rejectUser(user.id)"
+                                    :disabled="!user.profile_docs || user.is_approved === false || user.profile_docs === null"
+                                    :title="!user.profile_docs ? 'Profile docs not uploaded' : ''">
+                                    Reject
+                                </button>
+                            </div>
+
+                            <!-- Block / Unblock Button -->
+                            <button class="btn btn-warning btn-sm mx-1" @click="flagUser(user.id)"
+                                :disabled="user.role === 'Admin' || user.rating === null"
+                                :title="user.role === 'Admin' ? 'Cannot block Admins' : ''">
+                                {{ user.is_blocked ? "Unblock" : "Block" }}
                             </button>
                         </td>
                     </tr>
@@ -113,9 +129,6 @@ const approveUser = async (userId) => {
 
     } catch (error) {
         console.error("Approval failed:", error);
-        if (error.response) {
-            console.error("Server response:", error.response.data);
-        }
         errorMessage.value = "Failed to approve user.";
     }
 };
@@ -146,10 +159,35 @@ const rejectUser = async (userId) => {
         }
     } catch (error) {
         console.error("Rejection failed:", error);
-        if (error.response) {
-            console.error("Server response:", error.response.data);
-        }
         errorMessage.value = "Failed to reject user.";
+    }
+};
+
+// Block/Unblock User
+const flagUser = async (userId) => {
+    if (!confirm("Are you sure you want to toggle the block status for this user?")) {
+        return;
+    }
+    try {
+        const token = localStorage.getItem("token");
+
+        const response = await axios.post(`http://127.0.0.1:5858/admin/flag_user/${userId}`, {}, {
+            headers: { "Authorization": `Bearer ${token}` },
+        });
+
+        if (response.status === 200) {
+            const user = users.value.find(user => user.id === userId);
+            if (user) {
+                user.is_blocked = !user.is_blocked; // Toggle the blocked status
+                alert(`User ${user.username} has been ${user.is_blocked ? "blocked" : "unblocked"}!`);
+            }
+        } else {
+            console.error("Unexpected response:", response);
+            errorMessage.value = "Unexpected response received.";
+        }
+    } catch (error) {
+        console.error("Blocking failed:", error);
+        errorMessage.value = "Failed to block/unblock user.";
     }
 };
 
@@ -159,7 +197,7 @@ onMounted(fetchUsers);
 
 <style scoped>
 .container {
-    max-width: 900px;
+    max-width: 1100px;
     margin: auto;
     background: #f9f9f9;
     padding: 20px;

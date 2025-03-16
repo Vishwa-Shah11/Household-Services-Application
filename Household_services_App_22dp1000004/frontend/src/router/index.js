@@ -11,6 +11,7 @@ import SearchService from '@/components/SearchService.vue';
 import ServiceDetails from '@/components/ServiceDetails.vue';
 import ManageUsers from '@/components/ManageUsers.vue';
 //import SelectProfessional from '@/components/SelectProfessional.vue';
+import SearchProfessionals from '../components/SearchProfessionals.vue';
 
 const routes = [
     { path: '/', redirect: '/login' },
@@ -18,6 +19,7 @@ const routes = [
     { path: '/register', component: Register },
     { path: '/admin/dashboard', component: AdminDashboard, meta: { requiresAuth: true } },
     { path: '/admin/users', component: ManageUsers, meta: { requiresAuth: true, role: 'Admin' } },
+    { path: '/admin/search-professionals', component: SearchProfessionals, meta: { requiresAuth: true, role: 'Admin' } },
     { path: '/customer/dashboard', component: CustomerDashboard, meta: { requiresAuth: true } },
     { path: '/category/:category', component: CategoryServices, meta: { requiresAuth: true } },
     //{ path: '/select-professional/:serviceId', component: SelectProfessional, meta: { requiresAuth: true } },

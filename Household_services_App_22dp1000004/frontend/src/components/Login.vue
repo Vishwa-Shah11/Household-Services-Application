@@ -35,7 +35,7 @@ const loginUser = async () => {
       email: email.value,
       password: password.value
     });
-
+ 
     // console.log("API Response:", response);
 
     if (response.data.token) {
@@ -57,7 +57,11 @@ const loginUser = async () => {
   } catch (error) {
     // errorMessage.value = 'Invalid credentials';
     console.error("Login failed:", error.response?.data || error);
-    alert(error.response?.data?.error || "Invalid credentials");
+    if (error.response?.status === 403) {
+      alert("Your account is blocked. Please contact support.");
+    } else {
+      alert(error.response?.data?.error || "Invalid credentials");
+    }
   }
 };
 

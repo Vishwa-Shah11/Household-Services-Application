@@ -227,6 +227,10 @@ def login():
         print(check_password_hash(new_user.password, password))
         if not new_user or not check_password_hash(new_user.password, password):
             return jsonify({'error': 'Invalid credentials'}), 401
+        
+        # Check if user is blocked
+        if new_user.is_blocked:
+            return jsonify({'error': 'Your account is blocked. Please contact support.'}), 403  # Forbidden
 
         # Generate JWT token
         access_token = create_access_token(identity={'id': new_user.id, 'role': new_user.role, 'username': new_user.username})

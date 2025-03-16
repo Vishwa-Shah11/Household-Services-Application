@@ -1,14 +1,17 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
-      <router-link class="navbar-brand" to="/home" v-if="isAuthenticated">Home</router-link>
+      <!-- <router-link class="navbar-brand" to="/home" v-if="isAuthenticated">Home</router-link> -->
+      <router-link class="navbar-brand" to="/home">Home</router-link>
       <div class="navbar-nav">
-        <router-link class="nav-link" to="/admin/dashboard" v-if="isAdmin">Dashboard</router-link>
-        <router-link class="nav-link" to="/customer/dashboard" v-if="isCustomer">Dashboard</router-link>
-        <router-link class="nav-link" to="/proffesional/dashboard" v-if="isProffesional">Dashboard</router-link>
-        <router-link class="nav-link" to="/service/search" v-if="isAuthenticated">Search</router-link>
+        <router-link class="nav-link" to="/admin/dashboard" v-if="isAuthenticated && isAdmin">Dashboard</router-link>
+        <router-link class="nav-link" to="/customer/dashboard" v-if="isAuthenticated && isCustomer">Dashboard</router-link>
+        <router-link class="nav-link" to="/proffesional/dashboard" v-if="isAuthenticated && isProffesional">Dashboard</router-link>
+        <!-- <router-link class="nav-link" to="/service/search" v-if="isAuthenticated">Search</router-link> -->
+        <router-link class="nav-link" to="/service/search" v-if="isAuthenticated && isCustomer">Search</router-link>
+        <router-link class="nav-link" to="/admin/search-professionals" v-if="isAuthenticated && isAdmin">Search</router-link>
         <router-link class="nav-link" to="/summary" v-if="isAuthenticated">Summary</router-link>
-        <router-link class="nav-link" to="/admin/users" v-if="isAdmin">Manage Users</router-link>
+        <router-link class="nav-link" to="/admin/users" v-if="isAuthenticated && isAdmin">Manage Users</router-link>
         <button class="btn btn-danger ms-2" @click="logout" v-if="isAuthenticated">Logout</button>
       </div>
     </div>

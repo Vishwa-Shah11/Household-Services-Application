@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from models import db, User, Service
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from utils import role_required
+from sqlalchemy.sql import func
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -117,7 +118,7 @@ def get_all_users():
         } 
         for user in users
     ]
-    print("Users List:", users_list)
+    # print("Users List:", users_list)
     return jsonify({"users": users_list}), 200
 
 
@@ -151,24 +152,38 @@ def reject_user(user_id):
 
 # Admin search for professionals
 @admin_bp.route('/search_professionals', methods=['GET'])
+@role_required('Admin')
 @jwt_required()
 def search_professionals():
-    claims = get_jwt_identity()
-    if claims['role'] != 'Admin':
-        return jsonify({'error': 'Admins only!'}), 403
+    try:
+        current_user = get_jwt_identity()
+        # Get search query parameters
+        query = request.args.get('q', '').strip().lower()
 
-    query_params = request.args
-    filters = [User.role == 'Professional']
+        if not query:
+            return jsonify({'error': 'Search query is required'}), 400
+        
+        # Search professionals in DB
+        professionals = User.query.filter(
+            User.role == 'Professional',
+            (User.username.ilike(f"%{query}%")) |  # Search by name
+            (User.email.ilike(f"%{query}%"))  |  # Search by email
+            (User.rating.ilike(f"%{query}%"))    # Search by rating
+        ).all()
 
-    if 'name' in query_params:
-        filters.append(User.name.ilike(f"%{query_params['name']}%"))
-    if 'email' in query_params:
-        filters.append(User.email.ilike(f"%{query_params['email']}%"))
-
-    professionals = User.query.filter(*filters).all()
-    results = [{'id': p.id, 'name': p.name, 'email': p.email, 'is_approved': p.is_approved, 'is_blocked': p.is_blocked} for p in professionals]
-
-    return jsonify({'professionals': results}), 200
+        results = [{
+            'id': p.id,
+            'name': p.username,
+            'email': p.email,
+            'rating': p.rating,
+            # 'is_approved': p.is_approved,
+            'is_blocked': p.is_blocked
+            } for p in professionals]
+        return jsonify({'professionals': results}), 200
+    
+    except Exception as e:
+        print(f"Error in search_professionals function: {str(e)}")
+        return jsonify({'error': 'Internal Server Error'}), 500
 
 
 # Flag (Block) a User
@@ -176,12 +191,18 @@ def search_professionals():
 @role_required('Admin')
 @jwt_required()
 def flag_user(user_id):
-    claims = get_jwt()
-    if claims['role'] != 'admin':
-        return jsonify({"msg": "Admins only!"}), 403
-
     target_user = User.query.get_or_404(user_id)
-    target_user.tokens_revoked = True  # Revoke the user's tokens
-    target_user.is_blocked = True  # Block the user
+    if target_user.role.lower() in ['professional', 'customer']:  
+        avg_rating = target_user.rating  # Directly using the rating column
+
+    if avg_rating is not None and avg_rating < 1:  # Automatic blocking for poor-rated users
+        target_user.is_blocked = True
+        db.session.commit()
+        return jsonify({"msg": f"User {target_user.name} has been automatically blocked due to poor ratings."}), 200
+
+    # Toggle block/unblock status
+    target_user.is_blocked = not target_user.is_blocked
     db.session.commit()
-    return jsonify({"msg": f"User {target_user.username} has been flagged and tokens revoked."}), 200
+    # target_user.tokens_revoked = True  # Revoke the user's tokens
+    status = "blocked" if target_user.is_blocked else "unblocked"
+    return jsonify({"message": f"User {target_user.username} has been {status} by Admin."}), 200
