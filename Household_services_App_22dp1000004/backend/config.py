@@ -1,13 +1,40 @@
 import os
 from datetime import timedelta
-from flask_jwt_extended import JWTManager
+from celery.schedules import crontab
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'your_secret_key')
     SQLALCHEMY_DATABASE_URI = 'sqlite:///household_services.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    REDIS_URL = "redis://localhost:6379/0"
      # JWT Configuration
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your_jwt_secret_key')  # Use a secure key
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=12)  # Increase access token expiration
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=7) # Increase refresh token expiration
+
+class CeleryConfig:
+    # REDIS_URL = "redis://localhost:6379/0"
+    REDIS_HOST = "172.22.102.218"
+    REDIS_PORT = "6379"
+    broker_url  = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+    result_backend  = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+    timezone = "Asia/Kolkata"
+    broker_connection_retry_on_startup = True
+    beat_schedule = {
+        # 'send-reminder-every-evening': {
+        #     'task': 'tasks.send_email_reminder',
+        #     'schedule': crontab(hour=18, minute=0),  # Runs daily at 6 PM IST
+        # },
+        # 'send-gchat-reminder': {
+        #     'task': 'tasks.send_google_chat_message',
+        #     'schedule': crontab(hour=18, minute=5),  # 5 mins after email
+        # },
+        #uncomment below code when you want to test for SMS
+        # 'send-sms-reminder': {
+        #     'task': 'tasks.send_sms_reminder',
+        #     'schedule': crontab(hour=18, minute=10),  # 10 mins after email
+        # }
+        'send-professional-reminders': {
+            'task': 'tasks.send_reminders_for_pending_requests',
+            'schedule': crontab(hour=18, minute=0),  # Runs daily at 6 PM IST
+        }
+    }
