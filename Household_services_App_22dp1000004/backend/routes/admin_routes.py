@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from models import db, User, Service
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from utils import role_required
-from sqlalchemy.sql import func
+# from sqlalchemy.sql import func
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -216,3 +216,18 @@ def flag_user(user_id):
     # target_user.tokens_revoked = True  # Revoke the user's tokens
     status = "blocked" if target_user.is_blocked else "unblocked"
     return jsonify({"message": f"User {target_user.username} has been {status} by Admin."}), 200
+
+
+@admin_bp.route("/export_closed_requests", methods=["POST"])
+def export_closed_requests():
+    """Trigger the CSV export task"""
+    from tasks import export_closed_service_requests
+    task = export_closed_service_requests.delay()
+    return jsonify({"message": "Export job started", "task_id": task.id})
+
+from celery.result import AsyncResult
+@admin_bp.route("/task-status/<task_id>", methods=["GET"])
+def task_status(task_id):
+    """Check the status of the export task"""
+    task_result = AsyncResult(task_id)
+    return jsonify({"status": task_result.state})

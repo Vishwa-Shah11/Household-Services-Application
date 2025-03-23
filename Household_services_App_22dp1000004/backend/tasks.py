@@ -9,6 +9,9 @@ import os
 from jinja2 import Template
 from datetime import datetime, timedelta
 from models import db, ServiceRequest, User
+import csv
+# from flask import current_app
+from utils import send_email
 
 # Initialize Flask app and Celery
 flask_app = create_app()
@@ -183,3 +186,33 @@ def send_email_report(customer_email, report_html):
         print(f"Report sent to {customer_email}")
     except Exception as e:
         print(f"Failed to send report to {customer_email}: {e}")
+
+
+@shared_task
+def export_closed_service_requests():
+    """Export closed service requests as a CSV file"""
+    with flask_app.app_context():
+        closed_requests = ServiceRequest.query.filter_by(service_status="Closed").all()
+        
+        if not closed_requests:
+            return "No closed service requests to export."
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"Closed_service_requests_{timestamp}.csv"
+        file_path = os.path.join(flask_app.config["EXPORT_FOLDER"], filename)
+
+        # Create CSV file
+        with open(file_path, mode="w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Service ID", "Customer ID", "Professional ID", "Date of Request", "Remarks"])
+
+            for request in closed_requests:
+                writer.writerow([request.id, request.customer_id, request.professional_id, request.date_of_request, request.remarks])
+
+        # Send email notification
+        admin_email = flask_app.config["ADMIN_EMAIL"]
+        subject = "Closed Service Requests Export Completed"
+        body = f"The export file {filename} has been generated successfully."
+        send_email(admin_email, subject, body, file_path)
+
+        return f"Export completed: {filename}"

@@ -10,6 +10,9 @@ class Config:
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your_jwt_secret_key')  # Use a secure key
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=12)  # Increase access token expiration
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=7) # Increase refresh token expiration
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    EXPORT_FOLDER = os.path.join(BASE_DIR, "exports")
+    ADMIN_EMAIL = "admin@gmail.com"
 
 class CeleryConfig:
     # REDIS_URL = "redis://localhost:6379/0"

@@ -2,6 +2,12 @@ from flask import jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from functools import wraps
 import jwt
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+import smtplib
+import os
 
 def role_required(required_role):
     def decorator(func):
@@ -35,3 +41,35 @@ def get_customer_id_from_token(token):
     except jwt.InvalidTokenError as e:
         print(f"Invalid Token: {e}")
         return None  # Invalid token
+    
+def send_email(to_email, subject, body, attachment_path=None):
+    """Send an email with an optional attachment"""
+    sender_email = "22dp1000004@ds.study.iitm.ac.in"  # Change to your email
+    sender_password = "kkrujxqcerihrywa"  # Use an app password if needed
+
+    msg = MIMEMultipart()
+    msg["From"] = sender_email
+    msg["To"] = to_email
+    msg["Subject"] = subject
+
+    msg.attach(MIMEText(body, "plain"))
+
+    # Attach file if provided
+    if attachment_path and os.path.exists(attachment_path):
+        with open(attachment_path, "rb") as attachment:
+            part = MIMEBase("application", "octet-stream")
+            part.set_payload(attachment.read())
+            encoders.encode_base64(part)
+            part.add_header("Content-Disposition", f"attachment; filename={os.path.basename(attachment_path)}")
+            msg.attach(part)
+
+    try:
+        # SMTP Configuration (Gmail Example)
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, to_email, msg.as_string())
+
+        print("Email sent successfully!")
+    except Exception as e:
+        print(f"Failed to send email: {e}")

@@ -3,7 +3,7 @@
     <h2>Admin Dashboard</h2>
 
     <!-- CREATE SERVICE BUTTON -->
-    <button @click="showCreateModal = true" class="btn btn-primary">Create New Service</button> <br />  <br />
+    <button @click="showCreateModal = true" class="btn btn-primary">Create New Service</button> <br /> <br />
 
     <!-- SERVICE LIST -->
     <h3>Services</h3>
@@ -17,7 +17,7 @@
           <th>Description</th>
           <th>Time Required</th>
           <th>Actions</th>
-        </tr> 
+        </tr>
       </thead>
       <tbody>
         <tr v-for="service in services" :key="service.id">
@@ -73,10 +73,17 @@
         <button @click="showUpdateModal = false" class="btn btn-danger">Close</button>
       </div>
     </div>
+
+    <br><br>
+    <!-- EXPORT CSV BATCHJOB -->
+    <button @click="startExport" class="btn btn-secondary">Export Closed Service Requests</button>
+    <p>{{ exportStatus }}</p>
+
   </div>
 </template>
 
 <script>
+import { ref } from "vue";
 export default {
   data() {
     return {
@@ -85,7 +92,9 @@ export default {
       newService: { name: "", base_price: "", description: "" },
       services: [], // Stores fetched services
       selectedService: { id: null, name: "", base_price: "", description: "" },
-      token: localStorage.getItem("token") // Store JWT token
+      token: localStorage.getItem("token"), // Store JWT token
+      message: "",
+      exportStatus: ref("Status will appear here...")
     };
   },
   methods: {
@@ -202,7 +211,50 @@ export default {
           console.error("Error deleting service:", error);
         }
       }
+    },
+
+    // async exportCSV() {
+    //   try {
+    //     const response = await fetch("http://127.0.0.1:5858/admin/export_closed_requests", { method: "POST" });
+    //     const data = await response.json();
+    //     this.message = data.message;
+    //   } catch (error) {
+    //     console.error("Error triggering export:", error);
+    //     this.message = "Failed to start export.";
+    //   }
+    // },
+    
+    async startExport() {
+      const response = await fetch("http://127.0.0.1:5858/admin/export_closed_requests", { method: "POST" });
+      const data = await response.json();
+      
+      if (data.task_id) {
+        this.exportStatus = "Export job started...";
+        await this.checkJobStatus(data.task_id);
+      }
+    },
+
+    async checkJobStatus(taskId) {
+      let status = "PENDING";
+
+      while (status !== "SUCCESS" && status !== "FAILURE") {
+        const response = await fetch(`http://127.0.0.1:5858/admin/task-status/${taskId}`);
+        const result = await response.json();
+        status = result.status;
+
+        if (status === "SUCCESS") {
+          this.exportStatus = "✅ Export job completed! 📧 Check your email.";
+          break;
+        } else if (status === "FAILURE") {
+          this.exportStatus = "❌ Export failed. Please try again.";
+          break;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 3000)); // Poll every 3 seconds
+      }
     }
+
+
   },
 
   mounted() {
