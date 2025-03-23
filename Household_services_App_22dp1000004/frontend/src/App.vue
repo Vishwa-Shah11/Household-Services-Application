@@ -10,7 +10,9 @@
         <!-- <router-link class="nav-link" to="/service/search" v-if="isAuthenticated">Search</router-link> -->
         <router-link class="nav-link" to="/service/search" v-if="isAuthenticated && isCustomer">Search</router-link>
         <router-link class="nav-link" to="/admin/search-professionals" v-if="isAuthenticated && isAdmin">Search</router-link>
-        <router-link class="nav-link" to="/summary" v-if="isAuthenticated">Summary</router-link>
+        <router-link class="nav-link" to="/admin/summary" v-if="isAuthenticated && isAdmin">Summary</router-link>
+        <router-link class="nav-link" to="/professional/summary" v-if="isAuthenticated && isProfessional">Summary</router-link>
+        <router-link class="nav-link" to="/customer/summary" v-if="isAuthenticated && isCustomer">Summary</router-link>
         <router-link class="nav-link" to="/admin/users" v-if="isAuthenticated && isAdmin">Manage Users</router-link>
         <button class="btn btn-danger ms-2" @click="logout" v-if="isAuthenticated">Logout</button>
       </div>

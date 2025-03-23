@@ -12,6 +12,9 @@ import ServiceDetails from '@/components/ServiceDetails.vue';
 import ManageUsers from '@/components/ManageUsers.vue';
 //import SelectProfessional from '@/components/SelectProfessional.vue';
 import SearchProfessionals from '../components/SearchProfessionals.vue';
+import AdminSummary from '@/components/AdminSummary.vue';
+import CustomerSummary from '@/components/CustomerSummary.vue';
+import ProfessionalSummary from '@/components/ProfessionalSummary.vue';
 
 const routes = [
     { path: '/', redirect: '/home' },
@@ -21,6 +24,8 @@ const routes = [
     { path: '/admin/dashboard', component: AdminDashboard, meta: { requiresAuth: true } },
     { path: '/admin/users', component: ManageUsers, meta: { requiresAuth: true, role: 'Admin' } },
     { path: '/admin/search-professionals', component: SearchProfessionals, meta: { requiresAuth: true, role: 'Admin' } },
+    { path: '/admin/summary', component: AdminSummary, meta: { requiresAuth: true, role: 'Admin' } },
+    { path: '/customer/summary', component: CustomerSummary, meta: { requiresAuth: true, role: 'Customer' } },
     { path: '/customer/dashboard', component: CustomerDashboard, meta: { requiresAuth: true } },
     { path: '/category/:category', component: CategoryServices, meta: { requiresAuth: true } },
     //{ path: '/select-professional/:serviceId', component: SelectProfessional, meta: { requiresAuth: true } },
@@ -33,6 +38,7 @@ const routes = [
     { path: "/service/search", component: SearchService },
     { path: '/service/:id', component: ServiceDetails },
     { path: '/professional/dashboard', component: ProfessionalDashboard, meta: { requiresAuth: true } },
+    { path: '/professional/summary', component: ProfessionalSummary, meta: { requiresAuth: true, role: 'Professional' } },
 ];
 
 const router = createRouter({

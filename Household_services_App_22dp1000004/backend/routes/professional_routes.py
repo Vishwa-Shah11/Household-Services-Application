@@ -160,3 +160,38 @@ def close_service_request(request_id):
         db.session.rollback()
         return jsonify({'error': 'Database error while closing service request'}), 500
     
+from sqlalchemy.sql import func
+@professional_bp.route('/summary', methods=['GET'])
+@role_required('Professional')
+@jwt_required()
+def get_professional_summary():
+    jwt_identity = get_jwt_identity()
+    professional_id = jwt_identity.get("id")
+    # print(f"Extracted professional_id: {professional_id}, Type: {type(professional_id)}")
+
+    if not professional_id:
+        return jsonify({"error": "Invalid professional ID"}), 400
+
+    try:
+        # Fetch professional's rating
+        professional = User.query.get(int(professional_id))
+        if not professional or professional.role != 'Professional':
+            return jsonify({"error": "Unauthorized"}), 403
+
+        rating = professional.rating
+
+        # Fetch service request summary
+        requested = ServiceRequest.query.filter_by(professional_id=professional_id, service_status="Requested").count()
+        assigned = ServiceRequest.query.filter_by(professional_id=professional_id, service_status="Assigned").count()
+        closed = ServiceRequest.query.filter_by(professional_id=professional_id, service_status="Closed").count()
+        rejected = ServiceRequest.query.filter_by(professional_id=professional_id, service_status="Rejected").count()
+
+        return jsonify({
+            "Rating": rating,
+            "Requested": requested,
+            "Assigned": assigned,
+            "Closed": closed,
+            "Rejected": rejected
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

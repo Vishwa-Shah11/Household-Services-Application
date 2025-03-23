@@ -358,3 +358,27 @@ def select_professional(service_id):
 
     # return jsonify({'message': 'Professional selected successfully'}), 200
     return jsonify({'message': 'Service Request created successfully'})
+
+@customer_bp.route("/summary", methods=["GET"])
+@jwt_required()
+def customer_summary():
+    user_identity = get_jwt_identity()  # Get logged-in customer's ID
+
+    if isinstance(user_identity, dict):  # If user_identity is a dict, extract the ID
+        user_id = user_identity.get("id")
+    else:
+        user_id = user_identity  # Otherwise, assume it's already an integer
+
+    if not user_id:
+        return jsonify({"error": "Invalid user identity"}), 400
+
+    # Fetch counts for requested, assigned, and closed service requests
+    requested_count = ServiceRequest.query.filter_by(customer_id=user_id, service_status="Requested").count()
+    assigned_count = ServiceRequest.query.filter_by(customer_id=user_id, service_status="Assigned").count()
+    closed_count = ServiceRequest.query.filter_by(customer_id=user_id, service_status="Closed").count()
+
+    return jsonify({
+        "Requested": requested_count,
+        "Assigned": assigned_count,
+        "Closed": closed_count
+    })

@@ -250,3 +250,33 @@ def task_status(task_id):
     """Check the status of the export task"""
     task_result = AsyncResult(task_id)
     return jsonify({"status": task_result.state})
+
+
+@admin_bp.route('/summary', methods=['GET'])
+def get_admin_summary():
+    try:
+        # User summary
+        total_customers = User.query.filter_by(role="Customer").count()
+        approved_professionals = User.query.filter_by(role="Professional", is_approved=True).count()
+        rejected_professionals = User.query.filter_by(role="Professional", is_approved=False).count()
+
+        user_summary = {
+            "customerCount": total_customers,
+            "approvedProfessionalCount": approved_professionals,
+            "rejectedProfessionalCount": rejected_professionals
+        }
+
+        # Service analytics
+        services = Service.query.all()
+        service_summary = {}
+        for service in services:
+            category = service.category
+            service_summary[category] = service_summary.get(category, 0) + 1
+
+        return jsonify({
+            "userSummary": user_summary,
+            "serviceSummary": service_summary
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
