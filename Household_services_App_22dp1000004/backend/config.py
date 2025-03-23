@@ -36,5 +36,9 @@ class CeleryConfig:
         'send-professional-reminders': {
             'task': 'tasks.send_reminders_for_pending_requests',
             'schedule': crontab(hour=18, minute=0),  # Runs daily at 6 PM IST
+        },
+        'send_monthly_activity_report': {
+            'task': 'tasks.send_monthly_activity_report',
+            'schedule': crontab(day_of_month=1, hour=8, minute=00),  # Runs on 1st of every month at 8 AM
         }
     }
