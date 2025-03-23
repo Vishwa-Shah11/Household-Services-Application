@@ -2,9 +2,13 @@ from flask import Blueprint, request, jsonify
 from models import db, User, Service
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from utils import role_required
+from config import cache
+import redis
 # from sqlalchemy.sql import func
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+
+redis_client = redis.Redis(host="localhost", port=6379, db=0)
 
 # Admin Dashboard
 @admin_bp.route('/dashboard', methods=['GET'])
@@ -19,7 +23,7 @@ def admin_dashboard():
 @jwt_required()
 def create_service():
     data = request.json
-    print("Service Data:", data)
+    # print("Service Data:", data)
     required_fields = ('name', 'category', 'base_price', 'description', 'time_required');
 
     if not all(key in data for key in required_fields):
@@ -35,6 +39,10 @@ def create_service():
         )
         db.session.add(new_service)
         db.session.commit()
+        # cache.delete("all_services")
+        # **Invalidate cache after adding a new service**
+        redis_client.delete("flask_cache_all_services")
+
         return jsonify({'message': 'Service created successfully'}), 201
     
     except Exception as e:
@@ -72,7 +80,12 @@ def update_service(service_id):
 @admin_bp.route('/services', methods=['GET'])
 @role_required('Admin')
 @jwt_required()
+@cache.cached(timeout=300, key_prefix="all_services")
 def get_services():
+    cached_services = redis_client.get("flask_cache_all_services")
+    if cached_services:
+        return jsonify(eval(cached_services))  # Return cached data
+    
     services = Service.query.all()
     service_list = [{
         "id": s.id,
@@ -83,8 +96,13 @@ def get_services():
         'time_required': s.time_required
     } for s in services]
 
+    response = jsonify({"services": service_list})
+
+    # **Set cache with expiry (e.g., 5 minutes = 300 seconds)**
+    redis_client.setex("flask_cache_all_services", 300, str(service_list))
+
     # print("Fetched Services:", service_list)
-    return jsonify({"services": service_list}), 200
+    return response, 200
 
 
 # Delete an Existing Service
@@ -219,6 +237,7 @@ def flag_user(user_id):
 
 
 @admin_bp.route("/export_closed_requests", methods=["POST"])
+@cache.cached(timeout=600, key_prefix="closed_requests_export")
 def export_closed_requests():
     """Trigger the CSV export task"""
     from tasks import export_closed_service_requests

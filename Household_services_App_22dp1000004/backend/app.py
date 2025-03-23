@@ -2,10 +2,11 @@ from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from routes.admin_routes import admin_bp
+#from backend.routes.admin_routes import admin_bp
 from routes.customer_routes import customer_bp
 from routes.professional_routes import professional_bp
 from routes.service_routes import service_bp
-from config import Config, CeleryConfig
+from config import Config, CeleryConfig, cache, init_cache
 from models import db
 from flask_login import LoginManager
 from routes.auth import auth_bp
@@ -33,6 +34,9 @@ def create_app():
     app.register_blueprint(customer_bp)
     app.register_blueprint(professional_bp)
     app.register_blueprint(service_bp, url_prefix='/service')
+
+    # Initialize Redis Cache
+    init_cache(app)
 
     with app.app_context():
         db.init_app(app)

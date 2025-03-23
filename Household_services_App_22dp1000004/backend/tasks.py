@@ -4,11 +4,11 @@ import smtplib
 from email.message import EmailMessage
 from twilio.rest import Client
 from celery import Celery, shared_task
-from config import CeleryConfig
+from config import CeleryConfig, cache
 import os
 from jinja2 import Template
 from datetime import datetime, timedelta
-from models import db, ServiceRequest, User
+from models import db, ServiceRequest, User, Service
 import csv
 # from flask import current_app
 from utils import send_email
@@ -16,6 +16,7 @@ from utils import send_email
 # Initialize Flask app and Celery
 flask_app = create_app()
 celery = Celery(flask_app.name)
+# celery = Celery(flask_app.name, broker=flask_app.config["broker_url"])
 celery.config_from_object(CeleryConfig)
 
 @shared_task
@@ -216,3 +217,13 @@ def export_closed_service_requests():
         send_email(admin_email, subject, body, file_path)
 
         return f"Export completed: {filename}"
+    
+
+@celery.task
+def refresh_service_cache():
+    """Fetch latest services and update cache proactively"""
+    with flask_app.app_context():  # Ensure database connection works inside Celery
+        services = Service.query.all()
+        service_list = [{"id": s.id, "name": s.name, "base_price": s.base_price} for s in services]
+        cache.set("services_all", service_list, timeout=600)  # Store in cache for 10 minutes
+        return f"Cache updated with {len(service_list)} services"
