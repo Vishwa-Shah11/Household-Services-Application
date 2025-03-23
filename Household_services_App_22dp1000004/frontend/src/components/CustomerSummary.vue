@@ -16,9 +16,9 @@
       return {
         chart: null,
         serviceData: {
-          requested: 0,
-          assigned: 0,
-          closed: 0
+          Requested: 0,
+          Assigned: 0,
+          Closed: 0
         }
       };
     },
@@ -48,7 +48,7 @@
             datasets: [
               {
                 label: "Service Requests",
-                data: [this.serviceData.requested, this.serviceData.assigned, this.serviceData.closed],
+                data: [this.serviceData.Requested, this.serviceData.Assigned, this.serviceData.Closed],
                 backgroundColor: ["#74b9ff", "#ff7675", "#55efc4"],
                 borderWidth: 1
               }
