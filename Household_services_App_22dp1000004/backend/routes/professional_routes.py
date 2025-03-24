@@ -1,18 +1,18 @@
 from flask import Blueprint, request, jsonify
-from models import db, User, ServiceRequest
+from models import db, User, ServiceRequest, Service
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from datetime import datetime
 from utils import role_required
 from sqlalchemy.exc import SQLAlchemyError
 import os
-from werkzeug.utils import secure_filename # Securely save files to disk
+from werkzeug.utils import secure_filename
 # from flask import current_app as app
 from flask import send_from_directory
 
 professional_bp = Blueprint('professional', __name__, url_prefix='/professional')
 
-UPLOAD_FOLDER = "uploads/"  # Define where files will be stored
-ALLOWED_EXTENSIONS = {"pdf", "doc", "docx", "jpg", "png"}  # Allowed formats
+UPLOAD_FOLDER = "uploads/"
+ALLOWED_EXTENSIONS = {"pdf", "doc", "docx", "jpg", "png"}
 
 # Ensure upload folder exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -86,24 +86,52 @@ def view_all_service_requests():
     # Check if the professional is approved
     if not professional or not professional.is_approved:
         return jsonify({'message': 'Access denied. Your account is not approved yet.'}), 403
+    # Assuming professional's category is stored in the User table (Update this if stored elsewhere)
+    professional_category = professional.category
+    if not professional_category:
+        return jsonify({'message': 'Professional category not found'}), 400
     # Fetch all service requests that are either assigned to the professional or still open
-    service_requests = ServiceRequest.query.filter(
-        (ServiceRequest.professional_id == professional_id) | 
-        (ServiceRequest.professional_id == None)  # Show unassigned requests too
-    ).all()
+    # Fetch service requests with filtering by category
+    service_requests = (
+        db.session.query(ServiceRequest, User.username.label("customer_name"), Service.name.label("service_name"))
+        .join(User, ServiceRequest.customer_id == User.id)  # Join with User to get customer name
+        .join(Service, ServiceRequest.service_id == Service.id)  # Join with Service to get service name
+        .filter((ServiceRequest.professional_id == professional_id) | (ServiceRequest.professional_id == None))
+        .filter(Service.category == professional_category)  # Filter by matching category
+        .all()
+    )
+    #  # Fetch service requests with joins
+    # service_requests = (
+    #     db.session.query(ServiceRequest, User.username.label("customer_name"), Service.name.label("service_name"))
+    #     .join(User, ServiceRequest.customer_id == User.id)  # Join with User table to get customer name
+    #     .join(Service, ServiceRequest.service_id == Service.id)  # Join with Service table to get service name
+    #     .filter((ServiceRequest.professional_id == professional_id) | (ServiceRequest.professional_id == None))
+    #     .all()
+    # )
+    print("Service reuests: ", service_requests)
+    # service_requests = ServiceRequest.query.filter(
+    #     (ServiceRequest.professional_id == professional_id) | 
+    #     (ServiceRequest.professional_id == None)  # Show unassigned requests too
+    # ).all()
     # service_requests = ServiceRequest.query.filter_by(professional_id=professional_id).all()
 
     if not service_requests:
-        return jsonify({'message': 'No service requests available'}), 404
+        return jsonify({'message': 'No service requests available for your category'}), 404
     
     results = [{
-            'id': req.id,
-            'service_id': req.service_id,
-            'customer_id': req.customer_id,
-            'date_of_request': req.date_of_request.strftime('%d-%m-%Y %I:%M %p'),
+            # 'id': req.id,
+            'id': req.ServiceRequest.id,
+            # 'service_id': req.service_id,
+            # 'customer_id': req.customer_id,
+            'customer_name': req.customer_name,  # Fetch customer name
+            'service_name': req.service_name,  # Fetch service name
+            # 'date_of_request': req.date_of_request.strftime('%d-%m-%Y %I:%M %p'),
+            'date_of_request': req.ServiceRequest.date_of_request.strftime('%d-%m-%Y %I:%M %p'),
             # 'date_of_completion': req.date_of_completion.strftime('%d-%m-%Y %I:%M %p'),
-            'service_status': req.service_status,
-            'remarks': req.remarks
+            # 'service_status': req.service_status,
+            'service_status': req.ServiceRequest.service_status,
+            # 'remarks': req.remarks
+            'remarks': req.ServiceRequest.remarks
         } for req in service_requests
     ]
 
@@ -117,7 +145,8 @@ def view_all_service_requests():
 def action_on_service_request(request_id):
     data = request.json
     professional_id = get_jwt_identity()['id']
-    service_request = ServiceRequest.query.filter_by(id=request_id, professional_id=None).first()
+    # service_request = ServiceRequest.query.filter_by(id=request_id, professional_id=None).first()
+    service_request = ServiceRequest.query.filter_by(id=request_id).first()
     if not service_request:
         return jsonify({'error': 'Service request not found or already assigned'}), 404
 

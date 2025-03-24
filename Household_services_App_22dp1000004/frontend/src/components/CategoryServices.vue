@@ -53,20 +53,6 @@ export default {
                 this.services = [];
             }
         },
-        // async requestService(serviceId) {
-        //     try {
-        //         const token = localStorage.getItem('token');
-        //         const userName = await getUserName();
-        //         const response = await axios.post('http://127.0.0.1:5858/customer/service_request',
-        //             { service_id: serviceId, remarks: `${userName} requested this service` },
-        //             { headers: { Authorization: `Bearer ${token}` } }
-        //         );
-        //         alert(response.data.message);
-        //     } catch (error) {
-        //         console.error('Error requesting service:', error);
-        //         alert('Failed to request service. Please try again.');
-        //     }
-        // },
 
         async requestService(serviceId) {
             try {
@@ -95,30 +81,6 @@ export default {
                     query: { serviceId: serviceId },
                 });
 
-                // // Step 2: Ask the customer to choose a professional
-                // let professionalOptions = professionalsResponse.data.map(prof => `${prof.id}: ${prof.name}`).join('\n');
-                // let selectedProfId = prompt(`Select a professional by entering their ID:\n${professionalOptions}`);
-
-                // if (!selectedProfId) {
-                //     alert("You must select a professional to proceed.");
-                //     return;
-                // }
-
-                // const userName = await getUserName(); // Get name from utility function
-                // console.log("👤 User Name:", userName);
-
-                // const response = await axios.post('http://127.0.0.1:5858/customer/service_request',
-                //     {
-                //         service_id: serviceId,
-                //         professional_id: parseInt(selectedProfId),
-                //         remarks: `${userName} requested this service`
-                //     },
-                //     { headers: { Authorization: `Bearer ${token}` } }
-                // );
-                // console.log(serviceId),
-                //     console.log(response.data.message);
-                // console.log(professionalsResponse.data.message)
-                // alert(professionalsResponse.data.message); // Show success message
             } catch (error) {
                 console.error('Error requesting service:', error);
                 alert('Failed to request service. Please try again.');

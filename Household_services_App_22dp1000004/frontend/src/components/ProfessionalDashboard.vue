@@ -31,8 +31,8 @@
         <thead class="table-dark">
           <tr>
             <th>ID</th>
-            <th>Customer ID</th>
-            <th>Service ID</th>
+            <th>Customer Name</th>
+            <th>Service Name</th>
             <th>Date of Request</th>
             <th>Status</th>
             <th>Remarks</th>
@@ -42,8 +42,8 @@
         <tbody>
           <tr v-for="request in serviceRequests" :key="request.id">
             <td>{{ request.id }}</td>
-            <td>{{ request.customer_id }}</td>
-            <td>{{ request.service_id }}</td>
+            <td>{{ request.customer_name }}</td>
+            <td>{{ request.service_name }}</td>
             <td>{{ request.date_of_request }}</td>
             <td>
               <span class="badge" :class="statusClass(request.service_status)">

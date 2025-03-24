@@ -22,7 +22,7 @@
         <li v-for="request in serviceRequests" :key="request.id" class="list-group-item">
           <strong>Service Name:</strong> {{ request.service_name }} <br />
           <strong>Allocated Date:</strong> {{ request.date_of_request }} <br />
-          <strong>Status:</strong> {{ request.service_status }} <br />
+          <strong>Status:</strong> {{ request.status }} <br />
           <button @click="editServiceRequest(request)" class="btn btn-warning btn-sm mt-2">Edit</button>
           <button @click="closeServiceRequest(request.id)" class="btn btn-danger btn-sm mt-2">Close</button>
         </li>
@@ -45,47 +45,12 @@
       <button @click="updateServiceRequest" class="btn btn-success">Update</button>
       <button @click="showEditForm = false" class="btn btn-secondary">Cancel</button>
     </div>
-
-    <!-- Edit Form (Initially Hidden) -->
-    <!-- <p>{{ showEditForm }}</p> -->
-    <!-- <div v-if="showEditForm" class="card p-3 mt-4">
-        <h3>Edit Service Request</h3>
-        <input v-model="selectedRequest.date_of_request" placeholder="Status" class="form-control mb-2" />
-        <input v-model="selectedRequest.service_status" placeholder="Status" class="form-control mb-2" />
-        <textarea v-model="selectedRequest.remarks" placeholder="Remarks" class="form-control mb-2"></textarea>
-        <button @click="updateServiceRequest" class="btn btn-success">Update</button>
-        <button @click="showEditForm = false" class="btn btn-secondary">Cancel</button>
-      </div> -->
-    <!-- <div v-if="showEditForm" class="card p-3 mt-4">
-        <h3>Edit Service Request</h3>
-
-        <label><strong>Request Date & Time:</strong></label>
-        <input type="datetime-local" v-model="selectedRequest.date_of_request" class="form-control mb-2"
-          @change="formatDateTime" />
-
-        <label><strong>Service Status:</strong></label>
-        <select v-model="selectedRequest.service_status" class="form-control mb-2">
-          <option value="Requested">Requested</option>
-          <option value="Assigned">Assigned</option>
-          <option value="Closed">Closed</option>
-        </select> -->
-
-    <!-- Remarks -->
-    <!-- <label><strong>Remarks:</strong></label>
-        <textarea v-model="selectedRequest.remarks" class="form-control mb-2"></textarea>
-
-        <button @click="updateServiceRequest" class="btn btn-success">Update</button>
-        <button @click="showEditForm = false" class="btn btn-secondary">Cancel</button>
-      </div>
-
-    </div> -->
   </div>
 </template>
 
 <script>
 import axios from 'axios';
-import { getUserName } from '@/router/utils.js';
-
+// import { getUserName } from '@/router/utils.js';
 
 export default {
   data() {
@@ -95,8 +60,8 @@ export default {
       remarks: "",
       serviceRequests: [],
       showServiceRequests: false,
-      selectedRequest: null, // Store selected request for editing
-      showEditForm: false, // Controls form visibility
+      selectedRequest: null, 
+      showEditForm: false,
       categories: [],
     };
   },
@@ -127,49 +92,7 @@ export default {
         console.error('Error fetching services:', error);
       }
     },
-    // async requestService(serviceId) {
-    //   try {
-    //     const token = localStorage.getItem('token');
-    //     console.log("🔐 JWT Token:", token);
-    //     // Step 1: Fetch professionals who offer this service
-    //     const professionalsResponse = await axios.get(`http://127.0.0.1:5858/customer/professionals/${serviceId}`, {
-    //       headers: { Authorization: `Bearer ${token}` }
-    //     });
-
-    //     if (!professionalsResponse.data.length) {
-    //       alert("No professionals available for this service.");
-    //       return;
-    //     }
-
-    //     // Step 2: Ask the customer to choose a professional
-    //     let professionalOptions = professionalsResponse.data.map(prof => `${prof.id}: ${prof.name}`).join('\n');
-    //     let selectedProfId = prompt(`Select a professional by entering their ID:\n${professionalOptions}`);
-
-    //     if (!selectedProfId) {
-    //         alert("You must select a professional to proceed.");
-    //         return;
-    //     }
-
-    //     const userName = await getUserName(); // Get name from utility function
-    //     console.log("👤 User Name:", userName);
-
-    //     const response = await axios.post('http://127.0.0.1:5858/customer/service_request',
-    //       { 
-    //         service_id: serviceId,
-    //         professional_id: parseInt(selectedProfId),
-    //         remarks: `${userName} requested this service`
-    //       },
-    //       { headers: { Authorization: `Bearer ${token}` } }
-    //     );
-    //     console.log(serviceId),
-    //     console.log(response.data.message);
-    //     alert(response.data.message); // Show success message
-    //   } catch (error) {
-    //     console.error('Error requesting service:', error);
-    //     alert('Failed to request service. Please try again.');
-    //   }
-    // },
-
+  
     async fetchServiceRequests() {
       try {
         const token = localStorage.getItem('token');

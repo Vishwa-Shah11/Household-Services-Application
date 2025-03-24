@@ -14,7 +14,7 @@
         <router-link class="nav-link" to="/professional/summary" v-if="isAuthenticated && isProfessional">Summary</router-link>
         <router-link class="nav-link" to="/customer/summary" v-if="isAuthenticated && isCustomer">Summary</router-link>
         <router-link class="nav-link" to="/admin/users" v-if="isAuthenticated && isAdmin">Manage Users</router-link>
-        <button class="btn btn-danger ms-2" @click="logout" v-if="isAuthenticated">Logout</button>
+        <button class="btn btn-danger ms-2" @click="confirmLogout" v-if="isAuthenticated">Logout</button>
       </div>
     </div>
   </nav>
@@ -45,6 +45,11 @@ export default {
     }
   },
   methods: {
+    confirmLogout() {
+      if (confirm("Are you sure you want to logout?")) {
+        this.logout();
+      }
+    },
     logout() {
       localStorage.removeItem("token");
       localStorage.removeItem("role"); // ✅ Ensure role is cleared on logout

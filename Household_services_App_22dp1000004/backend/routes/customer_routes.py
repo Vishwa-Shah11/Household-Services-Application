@@ -184,41 +184,6 @@ def edit_service_request(request_id):
     db.session.commit()
     return jsonify({'message': 'Service request updated successfully'}, 200) 
 
-# # Edit an existing service request
-# @customer_bp.route('/fetch_requests/<int:request_id>', methods=['PUT'])
-# @role_required('Customer')
-# @jwt_required()
-# def edit_service_request(request_id):
-#     data = request.json
-#     token = request.headers.get("Authorization").split(" ")[1]  # Extract token
-#     customer_id = get_customer_id_from_token(token)  # Get customer ID from token
-#     # customer_id = get_jwt_identity()['id']
-
-#     if not customer_id:
-#         return jsonify({'error': 'Unauthorized'}), 401
-
-#     service_request = ServiceRequest.query.filter_by(id=request_id, customer_id=customer_id).first()
-#     if not service_request:
-#         return jsonify({'error': 'Service request not found'}), 404
-
-#     try :
-#     # Update fields if provided
-#         if 'date_of_request' in data and data['date_of_request']:
-#                 service_request.date_of_request = datetime.strptime(data['date_of_request'], '%Y-%m-%d %H:%M:%S')
-#         if 'service_status' in data:
-#             if data['service_status'] not in ['requested', 'assigned', 'closed']:
-#                 return jsonify({'error': 'Invalid service status'}), 400
-#             service_request.service_status = data['service_status']
-#         if 'remarks' in data:
-#             service_request.remarks = data['remarks']
-
-#         db.session.commit()
-#         return jsonify({'message': 'Service request updated successfully'}), 200
-#     except ValueError :
-#         return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD HH:MM:SS'}), 400
-#     except Exception as e:
-#         return jsonify({'error': f'An unexpected error occurred: {str(e)}'}), 500
-
 
 # Close an existing service request with rating & remarks
 @customer_bp.route('/fetch_requests/<int:request_id>/close', methods=['PUT'])
@@ -277,15 +242,7 @@ def get_professionals_for_service(service_id):
     service = Service.query.get(service_id)
     if not service:
         return jsonify({"error": "Service not found"}), 404
-    # Fetch professionals who provide this service
-    # professionals = (
-    #     User.query
-    #     .filter_by(role="Professional", is_approved=True, category=service.category)
-    #     .join(ServiceRequest, ServiceRequest.service_id == service_id)
-    #     # .filter(ServiceRequest.service_id == service_id)
-    #     .order_by(User.rating.desc())  # Sort only by rating
-    #     .all()
-    # )
+    # print(f"Service Category: {service.category}")
     professionals = (
         db.session.query(User, func.count(ServiceRequest.id).label("review_count"))
         .join(ServiceRequest, ServiceRequest.professional_id == User.id, isouter=True)
@@ -293,13 +250,13 @@ def get_professionals_for_service(service_id):
             User.role == "Professional",
             User.is_approved == True,
             User.category == service.category,
-            ServiceRequest.service_id == service_id
+            # ServiceRequest.service_id == service_id
         )
         .group_by(User.id)
         .order_by(User.rating.desc(), func.count(ServiceRequest.id).desc())
         .all()
     )
-    print("Professionals : ", professionals)
+    # print(f"Professionals found: {professionals}")
     if not professionals:
         return jsonify({'error': 'No professionals available for this service'}), 404
     # Return professionals as a list
@@ -342,7 +299,7 @@ def select_professional(service_id):
     if not professional:
         return jsonify({'error': 'No professionals available for this category'}), 404
     
-    user = User.query.get_or_404(id)
+    user = User.query.get_or_404(customer_id)
 
     # ✅ Create a new service request (instead of using request_id)
     new_service_request = ServiceRequest(
