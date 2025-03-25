@@ -1,8 +1,9 @@
 <template>
-  <div class="container mt-5">
-    <div class="card shadow p-4">
-      <h2 class="text-center mb-4">Register</h2>
-
+  <div class="d-flex flex-column justify-content-center align-items-center vh-200">
+    <h3 class="text-center text-primary fw-bold mb-4">Quique Care</h3>
+    <div class="card shadow-lg p-4">
+      <h2 class="text-center text-primary mb-4">Register</h2>
+      
       <!-- Role Selection -->
       <div class="mb-3">
         <label class="form-label fw-bold">Select Role:</label>
@@ -48,9 +49,8 @@
 
       <div v-if="role === 'Professional'">
         <div class="mb-3">
-          <label for="category">Select Your Category:</label>
+          <label for="category" class="form-label fw-bold">Select Your Category:</label>
           <select v-model="selectedCategory" class="form-select">
-            <option value="">Select</option>
             <option v-for="category in categories" :key="category" :value="category">
               {{ category }}
             </option>
@@ -60,9 +60,7 @@
 
       <!-- Register Button -->
       <div class="text-center">
-        <!-- <button @click="() => console.log('Register button clicked!')" class="btn btn-primary w-100">Register</button> -->
         <button @click="registerUser" class="btn btn-primary w-100">Register</button>
-        <!-- <button @click="registerUser" class="btn btn-primary w-100">Register</button> -->
       </div>
     </div>
   </div>
@@ -96,8 +94,6 @@ export default {
     handleFileUpload(event) {
       this.form.profile_docs = event.target.files[0];
     },
-
-
     async fetchCategories() {
       try {
         const response = await fetch("http://127.0.0.1:5858/auth/get_categories"); // API call
@@ -108,15 +104,10 @@ export default {
         const data = await response.json(); // Parse JSON response
         console.log("Categories received:", data); // Debugging
         this.categories = data.categories; // Store categories in Vue data
-        // for (let C of this.categories) {
-        //   console.log("category" , C);
-        //   this.selectedCategory = C;
-        // }
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
     },
-
     async registerUser() {
       console.log("🚀 Register button clicked!");
       const formData = new FormData();

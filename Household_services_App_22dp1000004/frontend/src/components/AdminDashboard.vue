@@ -36,29 +36,20 @@
     </table>
 
     <!-- CREATE SERVICE MODAL -->
-    <!-- Modal Overlay -->
-    <div v-if="showCreateModal" class="modal-overlay"></div>
-    <div v-if="showCreateModal" class="custom-modal">
-      <div class="modal-content">
-        <h3>Create New Service</h3>
-        <input v-model="newService.name" placeholder="Service Name" />
-        <input v-model="newService.category" placeholder="Category" />
-        <input v-model="newService.base_price" placeholder="Base Price" type="number" />
-        <textarea v-model="newService.description" placeholder="Description"></textarea>
-        <input v-model="newService.time_required" placeholder="Time Required (minutes)" type="number" />
-        <!-- <input v-model="newService.image_url" placeholder="Image URL" />
-        <input v-model="newService.status" placeholder="Status" />
-        <input v-model="newService.is_active" placeholder="Is Active" />
-        <input v-model="newService.is_approved" placeholder="Is Approved" />
-        <input v-model="newService.is_rejected" placeholder="Is Rejected" />
-        <input v-model="newService.is_assigned" placeholder="Is Assigned" />
-        <input v-model="newService.is_completed" placeholder="Is Completed" />
-        <input v-model="newService.is_cancelled" placeholder="Is Cancelled" />
-        <input v-model="newService.is_paid" placeholder="Is Paid" /> -->
-        <button @click="createService" class="btn btn-success">Submit</button>
-        <button @click="showCreateModal = false" class="btn btn-danger">Close</button>
-      </div>
-    </div>
+<!-- Modal Overlay -->
+<div v-if="showCreateModal" class="modal-overlay"></div>
+<div v-if="showCreateModal" class="custom-modal">
+  <div class="modal-content">
+    <h3>Create New Service</h3>
+    <input v-model="newService.name" placeholder="Service Name" />
+    <input v-model="newService.category" placeholder="Category" />
+    <input v-model="newService.base_price" placeholder="Base Price" type="number" />
+    <textarea v-model="newService.description" placeholder="Description"></textarea>
+    <input v-model="newService.time_required" placeholder="Time Required (minutes)" type="number" />
+    <button @click="createService" class="btn btn-success">Submit</button>
+    <button @click="showCreateModal = false" class="btn btn-danger">Close</button>
+  </div>
+</div>
 
     <!-- UPDATE SERVICE MODAL -->
     <div v-if="showUpdateModal" class="custom-modal">
@@ -98,11 +89,37 @@ export default {
     };
   },
   methods: {
-    async fetchServices() {
+    // async fetchServices() {
+    //   try {
+    //     if (!this.token) {
+    //       throw new Error("User not authenticated.");
+    //     }
+    //     const response = await fetch("http://127.0.0.1:5858/admin/services", {
+    //       method: "GET",
+    //       headers: {
+    //         "Authorization": `Bearer ${this.token}`,
+    //         "Content-Type": "application/json"
+    //       }
+    //     });
+    //     if (!response.ok) {
+    //       const errorText = await response.text();
+    //       throw new Error(`API Error: ${errorText}`);
+    //     }
+    //     const data = await response.json();
+    //     this.services = data.services;
+    //   } catch (error) {
+    //     console.error("Error fetching services:", error);
+    //   }
+    // },
+
+    async fetchServices(retries = 3) {
       try {
         if (!this.token) {
-          throw new Error("User not authenticated.");
+          console.error("Token not found, retrying...");
+          setTimeout(() => this.fetchServices(retries - 1), 2000); // Retry after 2 seconds
+          return;
         }
+
         const response = await fetch("http://127.0.0.1:5858/admin/services", {
           method: "GET",
           headers: {
@@ -110,16 +127,23 @@ export default {
             "Content-Type": "application/json"
           }
         });
+
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`API Error: ${errorText}`);
         }
+
         const data = await response.json();
         this.services = data.services;
+        console.log("Services fetched successfully:", this.services);
       } catch (error) {
         console.error("Error fetching services:", error);
+        if (retries > 0) {
+          setTimeout(() => this.fetchServices(retries - 1), 2000); // Retry after 2 seconds
+        }
       }
     },
+
 
     async createService() {
       console.log("Create service button clicked!");
@@ -223,11 +247,11 @@ export default {
     //     this.message = "Failed to start export.";
     //   }
     // },
-    
+
     async startExport() {
       const response = await fetch("http://127.0.0.1:5858/admin/export_closed_requests", { method: "POST" });
       const data = await response.json();
-      
+
       if (data.task_id) {
         this.exportStatus = "Export job started...";
         await this.checkJobStatus(data.task_id);
@@ -259,11 +283,13 @@ export default {
 
   mounted() {
     console.log("Vue Component Mounted");
-    this.fetchServices();
+    // this.fetchServices();
   },
 
   created() {
     console.log("Vue Instance Created:", this);
+    this.token = localStorage.getItem("token"); // Ensure token is fetched again
+    this.fetchServices(); // Fetch services on page load
   },
 
   watch: {
@@ -332,4 +358,87 @@ export default {
   border-radius: 5px;
   text-align: center;
 }
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+/* Modal Container */
+.custom-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  width: 400px;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  text-align: center;
+}
+
+/* Modal Title */
+.custom-modal h3 {
+  font-size: 22px;
+  margin-bottom: 15px;
+  color: #1f2937;
+  font-weight: bold;
+}
+
+/* Input Fields */
+.custom-modal input,
+.custom-modal textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+/* Textarea Resizing */
+.custom-modal textarea {
+  height: 80px;
+  resize: none;
+}
+
+/* Buttons */
+.custom-modal .btn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Submit Button */
+.custom-modal .btn-success {
+  background: #198754;
+  color: white;
+}
+
+.custom-modal .btn-success:hover {
+  background: #157347;
+}
+
+/* Close Button */
+.custom-modal .btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.custom-modal .btn-danger:hover {
+  background: #bb2d3b;
+}
+
 </style>

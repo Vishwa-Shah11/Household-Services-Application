@@ -12,6 +12,11 @@ class ServiceRequest(db.Model):
     action = db.Column(db.String(20))  # Accepted/Rejected
     remarks = db.Column(db.Text)
     rating = db.Column(db.Integer, nullable=True)
+
+    # Relationships
+    service = db.relationship("Service", backref="service_requests")
+    customer = db.relationship("User", foreign_keys=[customer_id], backref="service_requests")
+    professional = db.relationship("User", foreign_keys=[professional_id], backref="service_requests")
     
     def __repr__(self):
         return f"<ServiceRequest {self.id} ({self.service_status})>"

@@ -2,12 +2,10 @@
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
       <router-link class="navbar-brand" to="/home" v-if="isAuthenticated">Home</router-link>
-      <!-- <router-link class="navbar-brand" to="/home">Home</router-link> -->
       <div class="navbar-nav">
         <router-link class="nav-link" to="/admin/dashboard" v-if="isAuthenticated && isAdmin">Dashboard</router-link>
         <router-link class="nav-link" to="/customer/dashboard" v-if="isAuthenticated && isCustomer">Dashboard</router-link>
         <router-link class="nav-link" to="/professional/dashboard" v-if="isAuthenticated && isProfessional">Dashboard</router-link>
-        <!-- <router-link class="nav-link" to="/service/search" v-if="isAuthenticated">Search</router-link> -->
         <router-link class="nav-link" to="/service/search" v-if="isAuthenticated && isCustomer">Search</router-link>
         <router-link class="nav-link" to="/admin/search-professionals" v-if="isAuthenticated && isAdmin">Search</router-link>
         <router-link class="nav-link" to="/admin/summary" v-if="isAuthenticated && isAdmin">Summary</router-link>
@@ -23,41 +21,56 @@
 </template>
 
 <script>
-// import { is } from "core-js/core/object";
+import { ref, watchEffect } from "vue";
+import { useRouter } from "vue-router";
 
 export default {
-  
-  computed: {
-    isAuthenticated() {
-      return localStorage.getItem("token") !== null;
-    },
-    userRole() {
-      return localStorage.getItem("role"); // ✅ Directly fetch role
-    },
-    isAdmin() {
-      return this.userRole === "Admin"; // ✅ Check if the user is an Admin
-    },
-    isCustomer() {
-      return this.userRole === "Customer"; // ✅ Check if the user is a Customer
-    },
-    isProfessional() {
-      return this.userRole === "Professional"; // ✅ Check if the user is a Professional
-    }
-  },
-  methods: {
-    confirmLogout() {
+  setup() {
+    const router = useRouter();
+
+    // ✅ Make authentication state reactive
+    const isAuthenticated = ref(localStorage.getItem("token") !== null);
+    const userRole = ref(localStorage.getItem("role"));
+
+    // ✅ Derived states for different user roles
+    const isAdmin = ref(userRole.value === "Admin");
+    const isCustomer = ref(userRole.value === "Customer");
+    const isProfessional = ref(userRole.value === "Professional");
+
+    // ✅ Watch for changes in localStorage and update the state
+    watchEffect(() => {
+      isAuthenticated.value = localStorage.getItem("token") !== null;
+      userRole.value = localStorage.getItem("role");
+      isAdmin.value = userRole.value === "Admin";
+      isCustomer.value = userRole.value === "Customer";
+      isProfessional.value = userRole.value === "Professional";
+    });
+
+    // ✅ Logout function
+    const confirmLogout = () => {
       if (confirm("Are you sure you want to logout?")) {
-        this.logout();
+        logout();
       }
-    },
-    logout() {
+    };
+
+    const logout = () => {
       localStorage.removeItem("token");
-      localStorage.removeItem("role"); // ✅ Ensure role is cleared on logout
-      this.$router.push("/login");
-    },
-  },
-  mounted() {
-    console.log("User Role:", this.userRole); // ✅ Debugging
+      localStorage.removeItem("role");
+      isAuthenticated.value = false;
+      userRole.value = null;
+      isAdmin.value = false;
+      isCustomer.value = false;
+      isProfessional.value = false;
+      router.push("/login"); // Redirect to login
+    };
+
+    return {
+      isAuthenticated,
+      isAdmin,
+      isCustomer,
+      isProfessional,
+      confirmLogout,
+    };
   },
 };
 </script>

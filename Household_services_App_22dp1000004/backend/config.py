@@ -50,7 +50,7 @@ class CeleryConfig:
         },
         'send_monthly_activity_report': {
             'task': 'tasks.send_monthly_activity_report',
-            'schedule': crontab(day_of_month=1, hour=8, minute=00),  # Runs on 1st of every month at 8 AM
+            'schedule': crontab(day_of_month=1, hour=8, minute=0),  # Runs on 1st of every month at 8 AM
         },
          'refresh-service-cache': {
         'task': 'tasks.refresh_service_cache',

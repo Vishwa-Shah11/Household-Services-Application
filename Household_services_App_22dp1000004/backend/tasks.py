@@ -120,8 +120,10 @@ def send_monthly_activity_report():
     """Generate and send a monthly activity report to customers."""
     # app = create_app()  # Create Flask app instance
     with flask_app.app_context():  # Activate application context
-        first_day_last_month = (datetime.now().replace(day=1) - timedelta(days=1)).replace(day=1)
-        last_day_last_month = datetime.now().replace(day=1) - timedelta(days=1)
+        # first_day_last_month = (datetime.now().replace(day=1) - timedelta(days=1)).replace(day=1)
+        # last_day_last_month = datetime.now().replace(day=1) - timedelta(days=1)
+        first_day_last_month = datetime.now().replace(day=1)  # First day of current month
+        last_day_last_month = datetime.now()  # Today (current date)
 
         customers = User.query.filter_by(role="Customer").all()
 
@@ -132,7 +134,9 @@ def send_monthly_activity_report():
                 ServiceRequest.date_of_request <= last_day_last_month
             ).all()
 
-            print(f"Customer: {customer.username}, Requests Found: {len(service_requests)}")  # Debugging
+            print(f"Customer: {customer.username}, Requests Found: {len(service_requests)}")
+            for req in service_requests:
+                print(f"Service ID: {req.id}, Name: {req.service.name}, Date: {req.date_of_request}, Status: {req.service_status}")
 
             report_html = generate_activity_report(customer.username, service_requests, first_day_last_month, last_day_last_month)
 
@@ -141,29 +145,123 @@ def send_monthly_activity_report():
     return "Monthly reports sent!"
 
 
+# def generate_activity_report(customer_name, service_requests, start_date, end_date):
+#     """Generate an HTML activity report for the customer."""
+#     template = Template("""
+#     <html>
+#     <body>
+#         <h2>Monthly Activity Report for {{ customer_name }}</h2>
+#         <p>Report Period: {{ start_date.strftime('%B %Y') }}</p>
+#         <table border="1" cellspacing="0" cellpadding="5">
+#             <tr>
+#                 <th>Service ID</th>
+#                 <th>Service Name</th>
+#                 <th>Date Requested</th>
+#                 <th>Status</th>
+#             </tr>
+#             {% if service_requests %}
+#                 {% for req in service_requests %}
+#                     <tr>
+#                         <td>{{ req.id }}</td>
+#                         <td>{{ req.service.name if req.service else 'N/A' }}</td>
+#                         <td>{{ req.date_of_request.strftime('%Y-%m-%d') }}</td>
+#                         <td>{{ req.service_status if req.service_status else 'N/A' }}</td>
+#                     </tr>
+#                 {% endfor %}
+#             {% else %}
+#                 <tr>
+#                     <td colspan="4">No service requests found for this period.</td>
+#                 </tr>
+#             {% endif %}
+#         </table>
+#     </body>
+#     </html>
+#     """)
+
+#     return template.render(customer_name=customer_name, service_requests=service_requests, start_date=start_date, end_date=end_date)
+
+
 def generate_activity_report(customer_name, service_requests, start_date, end_date):
-    """Generate an HTML activity report for the customer."""
+    """Generate a styled HTML activity report for the customer."""
     template = Template("""
     <html>
+    <head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <style>
+            .report-container {
+                max-width: 800px;
+                margin: 20px auto;
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 10px;
+                box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            }
+            h2 {
+                text-align: center;
+                margin-bottom: 20px;
+                font-weight: bold;
+            }
+            .table {
+                background: white;
+            }
+            th {
+                background-color: #007bff !important;
+                color: white !important;
+                text-transform: uppercase;
+            }
+            td, th {
+                padding: 10px;
+                text-align: center;
+            }
+            .badge {
+                font-size: 14px;
+                padding: 5px 10px;
+            }
+        </style>
+    </head>
     <body>
-        <h2>Monthly Activity Report for {{ customer_name }}</h2>
-        <p>Report Period: {{ start_date.strftime('%B %Y') }}</p>
-        <table border="1" cellspacing="0" cellpadding="5">
-            <tr>
-                <th>Service ID</th>
-                <th>Service Name</th>
-                <th>Date Requested</th>
-                <th>Status</th>
-            </tr>
-            {% for req in service_requests %}
-            <tr>
-                <td>{{ req.id }}</td>
-                <td>{{ req.service.name }}</td>
-                <td>{{ req.date_of_request.strftime('%Y-%m-%d') }}</td>
-                <td>{{ req.service_status }}</td>
-            </tr>
-            {% endfor %}
-        </table>
+        <div class="report-container">
+            <h2>Monthly Activity Report for <span class="fw-bold">{{ customer_name }}</span></h2>
+            <p class="text-center"><strong>Report Period:</strong> {{ start_date.strftime('%B %Y') }}</p>
+            <table class="table table-bordered table-striped text-center">
+                <thead>
+                    <tr>
+                        <th>Service ID</th>
+                        <th>Service Name</th>
+                        <th>Date Requested</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if service_requests %}
+                        {% for req in service_requests %}
+                            <tr>
+                                <td>{{ req.id }}</td>
+                                <td>{{ req.service.name if req.service else 'N/A' }}</td>
+                                <td>{{ req.date_of_request.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    {% if req.service_status == 'Closed' %}
+                                        <span class="badge bg-success">Closed</span>
+                                    {% elif req.service_status == 'Assigned' %}
+                                        <span class="badge bg-primary">Assigned</span>
+                                    {% elif req.service_status == 'Rejected' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% elif req.service_status == 'Requested' %}
+                                        <span class="badge bg-warning text-dark">Requested</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">N/A</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4">No service requests found for this period.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
     </body>
     </html>
     """)

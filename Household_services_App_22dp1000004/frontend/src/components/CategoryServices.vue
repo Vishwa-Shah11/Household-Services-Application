@@ -1,23 +1,23 @@
 <template>
     <div class="container mt-5">
-        <h2>{{ category }} Services</h2>
-        <div v-if="services.length === 0">No services available.</div>
-        <!-- <p>{{ services.length }}</p> -->
-        <div v-for="service in services" :key="service.id" class="card my-3 p-3">
-            <h5>{{ service.name }}</h5>
-            <p>{{ service.description }}</p>
-            <p><strong>Price:</strong> {{ service.base_price }}</p>
-            <p><strong>Time Required:</strong> {{ service.time_required }} minutes</p>
-            <button @click="requestService(service.id)" class="btn btn-primary">Request Service</button>
-            <p>{{ service.id }}</p>
+        <h2 class="text-center text-primary">{{ category }} Services</h2>
+        <div v-if="services.length === 0" class="text-muted text-center">No services available.</div>
+        <div class="row justify-content-center">
+            <div v-for="service in services" :key="service.id" class="col-md-6 col-lg-4">
+                <div class="card service-card shadow-sm my-3 p-3">
+                    <h5 class="text-dark">{{ service.name }}</h5>
+                    <p class="text-secondary">{{ service.description }}</p>
+                    <p><strong>Price:</strong> <span class="text-success">{{ service.base_price }}</span></p>
+                    <p><strong>Time Required:</strong> <span class="text-info">{{ service.time_required }} minutes</span></p>
+                    <button @click="requestService(service.id)" class="btn btn-primary btn-block">Request Service</button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
 import axios from 'axios';
-import { getUserName } from '@/router/utils.js';
-import router from '@/router/index.js';
 
 export default {
     data() {
@@ -33,83 +33,57 @@ export default {
         async fetchServices() {
             try {
                 const token = localStorage.getItem('token');
-                console.log("Fetching services for category:", this.category);
                 const response = await axios.get(`http://127.0.0.1:5858/customer/services/${this.category}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                console.log("Response:", response.data);
-                console.log("Services fetched successfully:", response.data.services);
-
-                if (response.data && response.data.services) {
-                    this.services = response.data.services;
-                    console.log("Services fetched successfully:", this.services);
-                } else {
-                    this.services = [];
-                    console.warn("No services found for this category.");
-                }
-
+                this.services = response.data.services || [];
             } catch (error) {
                 console.error('Error fetching services:', error);
                 this.services = [];
             }
         },
-
         async requestService(serviceId) {
             try {
                 const token = localStorage.getItem('token');
-                // console.log("🔐 JWT Token:", token);
-                // Step 1: Fetch professionals who offer this service
-                const professionalsResponse = await axios.get(`http://127.0.0.1:5858/customer/professionals/${serviceId}`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-                console.log("professionalsResponse", professionalsResponse.data)
-
+                const professionalsResponse = await axios.get(`http://127.0.0.1:5858/customer/professionals/${serviceId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
                 if (professionalsResponse.data.length === 0) {
                     alert("No professionals available for this service.");
                     return;
                 }
-                if (!serviceId) {
-                    console.error("🚨 serviceId is undefined or null!");
-                    alert("Service ID is missing. Please try again.");
-                    return;
-                }
-                console.log("🔄 Navigating to selectProfessional with serviceId:", serviceId);
-
-                // Redirect customer to professional selection page
-                this.$router.push({
-                    name: "selectProfessional",
-                    query: { serviceId: serviceId },
-                });
-
+                this.$router.push({ name: "selectProfessional", query: { serviceId: serviceId } });
             } catch (error) {
                 console.error('Error requesting service:', error);
                 alert('Failed to request service. Please try again.');
             }
-        },
-        async fetchServiceRequests() {
-            try {
-                const token = localStorage.getItem('token');
-                const response = await axios.get('http://127.0.0.1:5858/customer/fetch_requests', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                console.log("🛠️ API Response:", response.data.service_requests);
-                this.serviceRequests = response.data.service_requests || [];
-                console.log("✅ Updated serviceRequests:", this.serviceRequests);
-            } catch (error) {
-                console.error("❌ Error fetching service requests:", error);
-            }
-        },
+        }
     },
     mounted() {
         this.fetchServices();
-        this.fetchServiceRequests();
     }
 };
 </script>
 
 <style scoped>
-.card {
+.container {
+    max-width: 900px;
+    margin: auto;
+}
+.service-card {
     border: 1px solid #ddd;
     border-radius: 8px;
+    transition: transform 0.3s ease-in-out;
+    background: #f9f9f9;
+}
+.service-card:hover {
+    transform: scale(1.05);
+}
+.service-card h5 {
+    color: #007bff;
+}
+.btn-primary {
+    width: 100%;
+    border-radius: 5px;
 }
 </style>

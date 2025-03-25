@@ -1,21 +1,24 @@
 <template>
-  <div class="container mt-5">
-    <h2>Login</h2>
-    <form @submit.prevent="loginUser">
-      <div class="mb-3">
-        <label class="form-label">Email:</label>
-        <input type="email" v-model="email" class="form-control" required />
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Password:</label>
-        <input type="password" v-model="password" class="form-control" required />
-      </div>
-      <button type="submit" class="btn btn-primary">Login</button><br><br><br>
-      New user?
-      <router-link to="/register">Create Account</router-link>
-      <div v-if="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
-    </form>
-
+  <div class="d-flex flex-column justify-content-center align-items-center vh-200">
+    <h3 class="text-center text-primary fw-bold mb-4">Quique Care</h3>
+    <div class="card shadow-lg p-4" style="width: 400px;">
+      <h2 class="text-center text-primary mb-4">Login</h2>
+      <form @submit.prevent="loginUser">
+        <div class="mb-3">
+          <label class="form-label">Email:</label>
+          <input type="email" v-model="email" class="form-control" placeholder="Enter your email" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password:</label>
+          <input type="password" v-model="password" class="form-control" placeholder="Enter your password" required />
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Login</button>
+        <div class="text-center mt-3">
+          <small>New user? <router-link to="/register" class="text-decoration-none">Create Account</router-link></small>
+        </div>
+        <div v-if="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -35,27 +38,21 @@ const loginUser = async () => {
       email: email.value,
       password: password.value
     });
- 
-    // console.log("API Response:", response);
 
     if (response.data.token) {
       localStorage.setItem("token", response.data.token);
-      localStorage.setItem("role", response.data.role); // Stores correct role
-      localStorage.setItem("username", response.data.username); // Stores correct username
+      localStorage.setItem("role", response.data.role);
+      localStorage.setItem("username", response.data.username);
     }
-    // console.log("Stored username:", localStorage.getItem("username"));
-    // console.log("Stored role:", localStorage.getItem("role"));
 
-    // Redirect user based on role
     if (response.data.role === 'Admin') {
       router.push('/admin/dashboard');
     } else if (response.data.role === 'Professional') {
       router.push('/professional/dashboard');
-    } else  {
+    } else {
       router.push('/customer/dashboard');
     }
   } catch (error) {
-    // errorMessage.value = 'Invalid credentials';
     console.error("Login failed:", error.response?.data || error);
     if (error.response?.status === 403) {
       alert("Your account is blocked. Please contact support.");
@@ -64,5 +61,4 @@ const loginUser = async () => {
     }
   }
 };
-
 </script>
