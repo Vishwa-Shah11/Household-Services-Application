@@ -102,14 +102,14 @@ export default {
           throw new Error("Failed to fetch categories");
         }
         const data = await response.json(); // Parse JSON response
-        console.log("Categories received:", data); // Debugging
+        // console.log("Categories received:", data); // Debugging
         this.categories = data.categories; // Store categories in Vue data
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
     },
     async registerUser() {
-      console.log("🚀 Register button clicked!");
+      // console.log("🚀 Register button clicked!");
       const formData = new FormData();
       formData.append("role", this.role);
       formData.append("username", this.form.username);
@@ -125,7 +125,7 @@ export default {
         }
         formData.append("category", this.selectedCategory);
       }
-      console.log("Form Data:", Object.fromEntries(formData));
+      // console.log("Form Data:", Object.fromEntries(formData));
 
       try {
         const response = await axios.post("http://127.0.0.1:5858/auth/register", formData, {

@@ -89,29 +89,6 @@ export default {
     };
   },
   methods: {
-    // async fetchServices() {
-    //   try {
-    //     if (!this.token) {
-    //       throw new Error("User not authenticated.");
-    //     }
-    //     const response = await fetch("http://127.0.0.1:5858/admin/services", {
-    //       method: "GET",
-    //       headers: {
-    //         "Authorization": `Bearer ${this.token}`,
-    //         "Content-Type": "application/json"
-    //       }
-    //     });
-    //     if (!response.ok) {
-    //       const errorText = await response.text();
-    //       throw new Error(`API Error: ${errorText}`);
-    //     }
-    //     const data = await response.json();
-    //     this.services = data.services;
-    //   } catch (error) {
-    //     console.error("Error fetching services:", error);
-    //   }
-    // },
-
     async fetchServices(retries = 3) {
       try {
         if (!this.token) {
@@ -135,7 +112,7 @@ export default {
 
         const data = await response.json();
         this.services = data.services;
-        console.log("Services fetched successfully:", this.services);
+        // console.log("Services fetched successfully:", this.services);
       } catch (error) {
         console.error("Error fetching services:", error);
         if (retries > 0) {
@@ -146,9 +123,9 @@ export default {
 
 
     async createService() {
-      console.log("Create service button clicked!");
+      // console.log("Create service button clicked!");
       try {
-        console.log("Sending request to create service...");
+        // console.log("Sending request to create service...");
 
         const response = await fetch("http://127.0.0.1:5858/admin/create_service", {
           method: "POST",
@@ -159,15 +136,15 @@ export default {
           body: JSON.stringify(this.newService)
         });
 
-        console.log("Response received:", response);
+        // console.log("Response received:", response);
 
         const data = await response.json();
-        console.log("Response data:", data);
+        // console.log("Response data:", data);
 
         alert(data.message || data.error);
 
         if (response.ok) {
-          console.log("Service created successfully, closing modal...");
+          // console.log("Service created successfully, closing modal...");
           this.showCreateModal = false;
           this.newService = { name: "", category: "", base_price: "", description: "" };
           await this.fetchServices();
@@ -181,13 +158,13 @@ export default {
     },
 
     editService(service) {
-      console.log("Edit service button clicked!", service);
+      // console.log("Edit service button clicked!", service);
       this.selectedService = { ...service }; // Copy service data
       this.showUpdateModal = true;
     },
 
     async updateService() {
-      console.log("Update service button clicked!");
+      // console.log("Update service button clicked!");
       try {
         if (!this.token) {
           throw new Error("User not authenticated.");
@@ -236,17 +213,6 @@ export default {
         }
       }
     },
-
-    // async exportCSV() {
-    //   try {
-    //     const response = await fetch("http://127.0.0.1:5858/admin/export_closed_requests", { method: "POST" });
-    //     const data = await response.json();
-    //     this.message = data.message;
-    //   } catch (error) {
-    //     console.error("Error triggering export:", error);
-    //     this.message = "Failed to start export.";
-    //   }
-    // },
 
     async startExport() {
       const response = await fetch("http://127.0.0.1:5858/admin/export_closed_requests", { method: "POST" });
@@ -305,10 +271,8 @@ export default {
 </script>
 
 <style>
-/* Simple modal styling */
 .modal {
   display: block !important;
-  /* Override Bootstrap's display: none */
   position: fixed;
   top: 50%;
   left: 50%;
@@ -334,13 +298,10 @@ export default {
   z-index: 1050;
 }
 
-
-/* Ensure modal is hidden by default and shown only when needed */
 .modal.hidden {
   display: none;
 }
 
-/* Dark overlay effect */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -359,7 +320,6 @@ export default {
   text-align: center;
 }
 
-/* Modal Overlay */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -370,7 +330,6 @@ export default {
   z-index: 999;
 }
 
-/* Modal Container */
 .custom-modal {
   position: fixed;
   top: 50%;
@@ -385,7 +344,6 @@ export default {
   text-align: center;
 }
 
-/* Modal Title */
 .custom-modal h3 {
   font-size: 22px;
   margin-bottom: 15px;
@@ -393,7 +351,6 @@ export default {
   font-weight: bold;
 }
 
-/* Input Fields */
 .custom-modal input,
 .custom-modal textarea {
   width: 100%;
@@ -404,13 +361,11 @@ export default {
   font-size: 16px;
 }
 
-/* Textarea Resizing */
 .custom-modal textarea {
   height: 80px;
   resize: none;
 }
 
-/* Buttons */
 .custom-modal .btn {
   width: 100%;
   padding: 10px;
@@ -421,7 +376,6 @@ export default {
   cursor: pointer;
 }
 
-/* Submit Button */
 .custom-modal .btn-success {
   background: #198754;
   color: white;
@@ -431,7 +385,6 @@ export default {
   background: #157347;
 }
 
-/* Close Button */
 .custom-modal .btn-danger {
   background: #dc3545;
   color: white;

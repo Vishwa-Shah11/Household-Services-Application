@@ -112,12 +112,6 @@ div {
     margin-bottom: 20px;
 }
 
-/* canvas {
-    width: 100% !important;
-    max-width: 500px;
-    height: 300px !important;
-} */
-
 canvas {
     max-width: 400px;
     max-height: 400px;

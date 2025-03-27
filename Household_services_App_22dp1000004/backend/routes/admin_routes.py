@@ -1,10 +1,9 @@
 from flask import Blueprint, request, jsonify
 from models import db, User, Service
-from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils import role_required
 from config import cache
 import redis
-# from sqlalchemy.sql import func
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -60,8 +59,6 @@ def update_service(service_id):
         return jsonify({"error": "No update data provided"}), 400
     
     existing_service = Service.query.get_or_404(service_id)
-    # if not existing_service:
-    #     return jsonify({"error": "Service not found"}), 404
     
     existing_service.name = data.get('name', existing_service.name)
     existing_service.category = data.get('category', existing_service.category)
@@ -123,7 +120,6 @@ def delete_service(service_id):
 def get_all_users():
     users = User.query.filter(User.role.in_(["Customer", "Professional"])).all()
     # print("Users:", users)
-    
     users_list = [
         {
             "id": user.id,
@@ -177,7 +173,6 @@ def search_professionals():
         current_user = get_jwt_identity()
         # Get search query parameters
         query = request.args.get('q', '').strip().lower()
-
         if not query:
             return jsonify({'error': 'Search query is required'}), 400
         
@@ -221,9 +216,9 @@ def toggle_block(user_id):
 def flag_user(user_id):
     target_user = User.query.get_or_404(user_id)
     if target_user.role.lower() in ['professional', 'customer']:  
-        avg_rating = target_user.rating  # Directly using the rating column
+        avg_rating = target_user.rating
 
-    if avg_rating is not None and avg_rating < 1:  # Automatic blocking for poor-rated users
+    if avg_rating is not None and avg_rating < 1:
         target_user.is_blocked = True
         db.session.commit()
         return jsonify({"msg": f"User {target_user.name} has been automatically blocked due to poor ratings."}), 200

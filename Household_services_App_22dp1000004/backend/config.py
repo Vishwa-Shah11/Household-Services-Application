@@ -31,19 +31,6 @@ class CeleryConfig:
     timezone = "Asia/Kolkata"
     broker_connection_retry_on_startup = True
     beat_schedule = {
-        # 'send-reminder-every-evening': {
-        #     'task': 'tasks.send_email_reminder',
-        #     'schedule': crontab(hour=18, minute=0),  # Runs daily at 6 PM IST
-        # },
-        # 'send-gchat-reminder': {
-        #     'task': 'tasks.send_google_chat_message',
-        #     'schedule': crontab(hour=18, minute=5),  # 5 mins after email
-        # },
-        #uncomment below code when you want to test for SMS
-        # 'send-sms-reminder': {
-        #     'task': 'tasks.send_sms_reminder',
-        #     'schedule': crontab(hour=18, minute=10),  # 10 mins after email
-        # }
         'send-professional-reminders': {
             'task': 'tasks.send_reminders_for_pending_requests',
             'schedule': crontab(hour=18, minute=0),  # Runs daily at 6 PM IST

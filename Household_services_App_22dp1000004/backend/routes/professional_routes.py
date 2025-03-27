@@ -1,12 +1,11 @@
 from flask import Blueprint, request, jsonify
 from models import db, User, ServiceRequest, Service
-from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 from utils import role_required
 from sqlalchemy.exc import SQLAlchemyError
 import os
 from werkzeug.utils import secure_filename
-# from flask import current_app as app
 from flask import send_from_directory
 
 professional_bp = Blueprint('professional', __name__, url_prefix='/professional')
@@ -86,12 +85,9 @@ def view_all_service_requests():
     # Check if the professional is approved
     if not professional or not professional.is_approved:
         return jsonify({'message': 'Access denied. Your account is not approved yet.'}), 403
-    # Assuming professional's category is stored in the User table (Update this if stored elsewhere)
     professional_category = professional.category
     if not professional_category:
         return jsonify({'message': 'Professional category not found'}), 400
-    # Fetch all service requests that are either assigned to the professional or still open
-    # Fetch service requests with filtering by category
     service_requests = (
         db.session.query(ServiceRequest, User.username.label("customer_name"), Service.name.label("service_name"))
         .join(User, ServiceRequest.customer_id == User.id)  # Join with User to get customer name
@@ -100,21 +96,6 @@ def view_all_service_requests():
         .filter(Service.category == professional_category)  # Filter by matching category
         .all()
     )
-    #  # Fetch service requests with joins
-    # service_requests = (
-    #     db.session.query(ServiceRequest, User.username.label("customer_name"), Service.name.label("service_name"))
-    #     .join(User, ServiceRequest.customer_id == User.id)  # Join with User table to get customer name
-    #     .join(Service, ServiceRequest.service_id == Service.id)  # Join with Service table to get service name
-    #     .filter((ServiceRequest.professional_id == professional_id) | (ServiceRequest.professional_id == None))
-    #     .all()
-    # )
-    print("Service reuests: ", service_requests)
-    # service_requests = ServiceRequest.query.filter(
-    #     (ServiceRequest.professional_id == professional_id) | 
-    #     (ServiceRequest.professional_id == None)  # Show unassigned requests too
-    # ).all()
-    # service_requests = ServiceRequest.query.filter_by(professional_id=professional_id).all()
-
     if not service_requests:
         return jsonify({'message': 'No service requests available for your category'}), 404
     
@@ -160,7 +141,7 @@ def action_on_service_request(request_id):
         service_request.professional_id = professional_id
         service_request.service_status = 'Assigned'
     elif data.get('action') == 'Rejected':
-        service_request.professional_id = None
+        service_request.professional_id = professional_id
         service_request.service_status = 'Rejected'
     try :
         db.session.commit()
@@ -214,6 +195,8 @@ def get_professional_summary():
         assigned = ServiceRequest.query.filter_by(professional_id=professional_id, service_status="Assigned").count()
         closed = ServiceRequest.query.filter_by(professional_id=professional_id, service_status="Closed").count()
         rejected = ServiceRequest.query.filter_by(professional_id=professional_id, service_status="Rejected").count()
+
+        # print("Rejected: ", rejected)
 
         return jsonify({
             "Rating": rating,

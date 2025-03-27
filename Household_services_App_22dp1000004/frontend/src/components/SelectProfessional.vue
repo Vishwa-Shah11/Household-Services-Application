@@ -33,7 +33,7 @@ export default {
   },
   async mounted() {
     this.serviceId = this.$route.query.serviceId;
-    console.log("🛠 Received serviceId in SelectProfessional.vue:", this.serviceId);
+    // console.log("🛠 Received serviceId in SelectProfessional.vue:", this.serviceId);
 
     try {
       const token = localStorage.getItem("token");

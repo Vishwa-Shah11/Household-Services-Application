@@ -2,11 +2,10 @@ from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from routes.admin_routes import admin_bp
-#from backend.routes.admin_routes import admin_bp
 from routes.customer_routes import customer_bp
 from routes.professional_routes import professional_bp
 from routes.service_routes import service_bp
-from config import Config, CeleryConfig, cache, init_cache
+from config import Config, CeleryConfig, init_cache
 from models import db
 from flask_login import LoginManager
 from routes.auth import auth_bp
@@ -20,13 +19,12 @@ def create_app():
     # Initialize Flask-Login
     login_manager = LoginManager()
     login_manager.init_app(app)
-    login_manager.login_view = 'auth.login'  # Redirect unauthorized users to login
+    login_manager.login_view = 'auth.login'
 
     # Initialize JWT
     jwt = JWTManager(app) 
 
     CORS(app, resources={r"/*": {"origins": "*"}})
-    # CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
     # Register Blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')  # Auth routes

@@ -12,13 +12,13 @@ customer_bp = Blueprint('Customer', __name__, url_prefix='/customer')
 @role_required('Customer')
 @jwt_required()
 def customer_dashboard():
-    print("🚀 REQUEST RECEIVED at /customer/dashboard")  # Debugging
+    # print("🚀 REQUEST RECEIVED at /customer/dashboard")  # Debugging
     try:
         current_user = get_jwt_identity()
-        print("🟢 JWT Decoded User:", current_user)  # Check if token is decoded
+        # print("🟢 JWT Decoded User:", current_user)  # Check if token is decoded
         return jsonify({'message': f'Welcome to Customer Dashboard, {current_user["id"]}'}), 200
     except Exception as e:
-        print("❌ ERROR:", e)
+        # print("❌ ERROR:", e)
         return jsonify({"error": "Something went wrong"}), 500
 
 @customer_bp.route('/categories', methods=['GET'])
@@ -27,7 +27,7 @@ def get_categories():
     # categories = db.session.query(Service.category).distinct().all()
     categories = [category.value for category in ServiceCategory]
    
-    print("Categories : ", categories)
+    # print("Categories : ", categories)
     # print(type(categories),type(categories[0]),type(categories[0][0]))
     # print(type(str(categories[0])))
     return jsonify([str(category) for category in categories]), 200
@@ -96,26 +96,26 @@ def create_service_request():
 
 @customer_bp.route('/fetch_requests', methods=['GET'])
 def fetch_requests():
-    print("🚀 REQUEST RECEIVED at /customer/fetch_requests")  # Debugging
+    # print("🚀 REQUEST RECEIVED at /customer/fetch_requests")  # Debugging
     token = request.headers.get('Authorization')
     if not token:
-        print("❌ No Authorization token provided")
+        # print("❌ No Authorization token provided")
         return jsonify({"error": "Unauthorized"}), 401
 
     token = token.replace("Bearer ", "")  # Remove "Bearer " prefix
     customer_id_input = get_customer_id_from_token(token)
 
     if not customer_id_input:
-        print("❌ Invalid or expired token")
+        # print("❌ Invalid or expired token")
         return jsonify({"error": "Invalid or expired token"}), 401   
 
     try:
         service_requests = ServiceRequest.query.filter_by(customer_id=customer_id_input).all()
         # service_requests = Service.query.filter_by(category=customer_id_input).all()
-        print("service_requests : ", service_requests)
+        # print("service_requests : ", service_requests)
         # print(service_requests[0].id,service_requests[0].service_id,service_requests[0].customer_id,"my name is heet shah ")
         if not service_requests:
-            print("ℹ️ No service requests found for customer_id:", customer_id_input)
+            # print("ℹ️ No service requests found for customer_id:", customer_id_input)
             return jsonify({"service_requests": []}), 200  # Empty response instead of None
         
         response_data = []
@@ -126,7 +126,7 @@ def fetch_requests():
             service = Service.query.get(req.service_id)
             # print("service : ", service,"narendra modi")
             if not service:
-                print(f"⚠️ Service not found for service_id: {req.service_id}")
+                # print(f"⚠️ Service not found for service_id: {req.service_id}")
                 continue
 
             response_data.append({
@@ -140,7 +140,7 @@ def fetch_requests():
         # print("✅ Service Requests Found:", response_data)
         return jsonify({"service_requests": response_data}), 200
     except Exception as e:
-        print("❌ Error fetching service requests:", str(e))
+        # print("❌ Error fetching service requests:", str(e))
         return jsonify({"error": str(e)}), 500
 
 
@@ -150,18 +150,18 @@ def fetch_requests():
 @jwt_required()
 def edit_service_request(request_id):
     data = request.json
-    print("edit_service_request data : ", data)
+    # print("edit_service_request data : ", data)
     token = request.headers.get("Authorization").split(" ")[1]  # Extract token
     
     customer_id = get_customer_id_from_token(token)  # Get customer ID from token
-    print("customer_id : ", customer_id)
+    # print("customer_id : ", customer_id)
 
     if not customer_id:
         return jsonify({'error': 'Unauthorized'}), 401
 
     service_request = ServiceRequest.query.filter_by(id=request_id, customer_id=customer_id).first()
-    print(service_request)
-    print(type(service_request))
+    # print(service_request)
+    # print(type(service_request))
     if not service_request:
         return jsonify({'error': 'Service request not found'}), 404
     # Update fields if provided
@@ -170,7 +170,7 @@ def edit_service_request(request_id):
             # Parse the incoming date from format "10-03-2025 02:15 PM"
             # service_request.date_of_request = datetime.strptime(data['date_of_request'], '%d-%m-%Y %I:%M %p')
             service_request.date_of_request = service_request.date_of_request.replace(tzinfo=None)
-            print("hellooooooooooooooooooo", service_request.date_of_request)
+            # print("hellooooooooooooooooooo", service_request.date_of_request)
         except ValueError:
             return jsonify({'error': 'Invalid date format. Use DD-MM-YYYY HH:MM AM/PM'}), 400
 
@@ -277,7 +277,7 @@ def get_professionals_for_service(service_id):
 @jwt_required()
 def select_professional(service_id):
     data = request.json
-    print("Select Professional Data:", data)
+    # print("Select Professional Data:", data)
 
     customer_id = get_jwt_identity()['id']
 

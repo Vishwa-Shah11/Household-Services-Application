@@ -99,9 +99,9 @@ export default {
         const response = await axios.get('http://127.0.0.1:5858/customer/fetch_requests', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        console.log("🛠️ API Response:", response.data.service_requests);
+        // console.log("🛠️ API Response:", response.data.service_requests);
         this.serviceRequests = response.data.service_requests || [];
-        console.log("✅ Updated serviceRequests:", this.serviceRequests);
+        // console.log("✅ Updated serviceRequests:", this.serviceRequests);
       } catch (error) {
         console.error("❌ Error fetching service requests:", error);
       }
@@ -115,11 +115,11 @@ export default {
     },
 
     editServiceRequest(request) {
-      console.log("Editing Service Request:", request); // Debugging log
+      // console.log("Editing Service Request:", request); // Debugging log
       // Store selected request data without opening the form
       this.selectedRequest = { ...request };  // Create a copy to avoid modifying original data
       // Log the stored data for debugging
-      console.log("Stored Data:", this.selectedRequest);
+      // console.log("Stored Data:", this.selectedRequest);
       this.showEditForm = true; // Show the form
     },
 
@@ -139,7 +139,7 @@ export default {
 
       // Format: "10-03-2025 02:15 PM"
       let formattedDate = `${day}-${month}-${year} ${hours}:${minutes} ${ampm}`;
-      console.log("Formatted Date:", formattedDate);
+      // console.log("Formatted Date:", formattedDate);
       this.selectedRequest.date_of_request = formattedDate;
     },
 
@@ -161,7 +161,7 @@ export default {
         });
 
         const result = await response.json();
-        console.log("Update Response:", response.ok, result);
+        // console.log("Update Response:", response.ok, result);
         if (response.ok) {
           alert("Service Request Updated Successfully!");
           this.showEditForm = false;

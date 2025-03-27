@@ -7,16 +7,14 @@ from celery import Celery, shared_task
 from config import CeleryConfig, cache
 import os
 from jinja2 import Template
-from datetime import datetime, timedelta
+from datetime import datetime
 from models import db, ServiceRequest, User, Service
 import csv
-# from flask import current_app
 from utils import send_email
 
 # Initialize Flask app and Celery
 flask_app = create_app()
 celery = Celery(flask_app.name)
-# celery = Celery(flask_app.name, broker=flask_app.config["broker_url"])
 celery.config_from_object(CeleryConfig)
 
 @shared_task
@@ -24,26 +22,17 @@ def test_task():
     print("Celery Task Executed!")
     return "Celery is working!"
 
-# Replace with your actual credentials
-# GOOGLE_CHAT_WEBHOOK_URL = os.getenv("GOOGLE_CHAT_WEBHOOK_URL")
 GOOGLE_CHAT_WEBHOOK_URL = "https://chat.googleapis.com/v1/spaces/AAAAhacZMeo/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=kyRaIUGRt3yhGVY99ey_zj1-bY5ZcvBmbSDoFs_3hgA"
 EMAIL_SENDER = "22dp1000004@ds.study.iitm.ac.in"
-# EMAIL_SENDER = os.getenv("EMAIL_SENDER")
 EMAIL_PASSWORD = "kkrujxqcerihrywa"
-# EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 TWILIO_ACCOUNT_SID = "AC2a63ba44bd8525540af6ba75ed572d53"
 TWILIO_AUTH_TOKEN = "3141dbf5d88c01a7f5bf2695e82c3eac"
-TWILIO_PHONE_NUMBER = "+18507870867"  # Twilio phone number
-RECIPIENT_PHONE_NUMBER = "+917041758897"  # Receiver's phone number
-
-# GOOGLE_CHAT_WEBHOOK_URL = os.getenv("GOOGLE_CHAT_WEBHOOK_URL")
+TWILIO_PHONE_NUMBER = "+18507870867"
+# RECIPIENT_PHONE_NUMBER = ""
 
 @shared_task
 def send_reminders_for_pending_requests():
     """Check professionals with pending requests and send reminders"""
-
-    # app = create_app()
-    
     with flask_app.app_context():
         pending_requests = (
             db.session.query(ServiceRequest.professional_id, User.email, User.username)
@@ -67,23 +56,15 @@ def send_reminders_for_pending_requests():
 
     return f"Reminders sent to {len(pending_requests)} professionals."
 
-# @shared_task
 def send_google_chat_message(message):
-    print("GOOGLE_CHAT_WEBHOOK_URL:", GOOGLE_CHAT_WEBHOOK_URL)
     """Send a reminder via Google Chat"""
-    # message = {"text": "Reminder: You have pending service requests to complete!"}
     payload = {"text": message}
     response = requests.post(GOOGLE_CHAT_WEBHOOK_URL, json=payload)
     return response.status_code
 
-
-# @shared_task
 def send_email_reminder(to_email, message):
     """Send a reminder via email"""
-    # print("EMAIL_SENDER:", os.getenv("EMAIL_SENDER"))
-    # print("EMAIL_PASSWORD:", os.getenv("EMAIL_PASSWORD"))
     msg = EmailMessage()
-    # msg.set_content("Reminder: You have pending service requests to complete!")
     msg.set_content(message)
     msg["Subject"] = "Service Request  Reminder"
     msg["From"] = EMAIL_SENDER
@@ -97,15 +78,12 @@ def send_email_reminder(to_email, message):
     except Exception as e:
         return str(e)
 
-
-# @shared_task
 def send_sms_reminder(to_phone, message):
     """Send a reminder via SMS"""
     client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
     try:
         message = client.messages.create(
-            # body="Reminder: You have pending service requests to complete!",
             body=message,
             from_=TWILIO_PHONE_NUMBER,
             to=to_phone,
@@ -118,7 +96,6 @@ def send_sms_reminder(to_phone, message):
 @shared_task
 def send_monthly_activity_report():
     """Generate and send a monthly activity report to customers."""
-    # app = create_app()  # Create Flask app instance
     with flask_app.app_context():  # Activate application context
         # first_day_last_month = (datetime.now().replace(day=1) - timedelta(days=1)).replace(day=1)
         # last_day_last_month = datetime.now().replace(day=1) - timedelta(days=1)
@@ -143,42 +120,6 @@ def send_monthly_activity_report():
             send_email_report(customer.email, report_html)
 
     return "Monthly reports sent!"
-
-
-# def generate_activity_report(customer_name, service_requests, start_date, end_date):
-#     """Generate an HTML activity report for the customer."""
-#     template = Template("""
-#     <html>
-#     <body>
-#         <h2>Monthly Activity Report for {{ customer_name }}</h2>
-#         <p>Report Period: {{ start_date.strftime('%B %Y') }}</p>
-#         <table border="1" cellspacing="0" cellpadding="5">
-#             <tr>
-#                 <th>Service ID</th>
-#                 <th>Service Name</th>
-#                 <th>Date Requested</th>
-#                 <th>Status</th>
-#             </tr>
-#             {% if service_requests %}
-#                 {% for req in service_requests %}
-#                     <tr>
-#                         <td>{{ req.id }}</td>
-#                         <td>{{ req.service.name if req.service else 'N/A' }}</td>
-#                         <td>{{ req.date_of_request.strftime('%Y-%m-%d') }}</td>
-#                         <td>{{ req.service_status if req.service_status else 'N/A' }}</td>
-#                     </tr>
-#                 {% endfor %}
-#             {% else %}
-#                 <tr>
-#                     <td colspan="4">No service requests found for this period.</td>
-#                 </tr>
-#             {% endif %}
-#         </table>
-#     </body>
-#     </html>
-#     """)
-
-#     return template.render(customer_name=customer_name, service_requests=service_requests, start_date=start_date, end_date=end_date)
 
 
 def generate_activity_report(customer_name, service_requests, start_date, end_date):

@@ -116,7 +116,7 @@ export default {
         return;
       }
       this.selectedFile = event.target.files[0]; // Store the selected file
-      console.log("Selected file:", this.selectedFile);
+      // console.log("Selected file:", this.selectedFile);
     },
 
     // Handle file upload

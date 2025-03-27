@@ -11,10 +11,10 @@ service_bp = Blueprint('service_bp', __name__)
 @jwt_required()
 def search_services():
     current_user = get_jwt_identity()  # Get user from token
-    print(f"User {current_user} is searching...")  # Debugging
+    # print(f"User {current_user} is searching...")  # Debugging
 
     query = request.args.get('query', '').strip().lower()
-    print("Query:", query)
+    # print("Query:", query)
     if not query:
         return jsonify({'services': []}), 200  # Return empty if query is empty
     
@@ -23,11 +23,11 @@ def search_services():
         (Service.name.ilike(f"%{query}%")) | (Service.category.ilike(f"%{query}%"))
     ).all()
 
-    print("Services", services)
+    # print("Services", services)
 
     # Serialize results
     service_list = [{'id': s.id, 'name': s.name, 'category': s.category} for s in services]
-    print("Service list", service_list)
+    # print("Service list", service_list)
     return jsonify({'services': service_list})
 
 

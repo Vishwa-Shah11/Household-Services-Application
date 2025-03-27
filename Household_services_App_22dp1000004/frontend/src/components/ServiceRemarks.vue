@@ -3,26 +3,6 @@
     <h2 class="text-primary">Service Remarks</h2>
     <p>Request ID: <strong>{{ requestId }}</strong></p>
 
-    <!-- <div class="form-group">
-      <label>Service Name:</label>
-      <input type="text" class="form-control" v-model="serviceDetails.name" disabled />
-    </div> -->
-
-    <!-- <div class="form-group">
-      <label>Description:</label>
-      <input type="text" class="form-control" v-model="serviceDetails.description" disabled />
-    </div>
-
-    <div class="form-group">
-      <label>Professional Name:</label>
-      <input type="text" class="form-control" v-model="serviceDetails.professionalName" disabled />
-    </div>
-
-    <div class="form-group">
-      <label>Contact No:</label>
-      <input type="text" class="form-control" v-model="serviceDetails.contact" disabled />
-    </div> -->
-
     <!-- Service Rating -->
     <div class="form-group">
       <label>Service Rating:</label>
@@ -75,7 +55,7 @@ export default {
     async fetchServiceDetails() {
       try {
         const response = await axios.get(`http://127.0.0.1:5858/customer/service_request/${this.requestId}`);
-        console.log("response", response.data)
+        // console.log("response", response.data)
         this.serviceDetails = response.data;
       } catch (error) {
         console.error("Error fetching service details:", error);
